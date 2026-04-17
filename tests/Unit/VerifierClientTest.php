@@ -74,3 +74,104 @@ it('throws SwissEidException on 5xx response', function (): void {
     $client = makeClient();
     $client->createVerification([]);
 })->throws(SwissEidException::class);
+
+it('fetches an OAuth2 token and attaches it to verifier requests', function (): void {
+    \Illuminate\Support\Facades\Cache::flush();
+
+    Http::fake([
+        'auth.example/token' => Http::response([
+            'access_token' => 'token-from-server',
+            'expires_in' => 3600,
+        ], 200),
+        'localhost:8083/management/api/verifications' => Http::response([
+            'id' => 'verifier-uuid',
+        ], 200),
+    ]);
+
+    $client = makeClient([
+        'auth' => [
+            'enabled' => true,
+            'token_url' => 'http://auth.example/token',
+            'client_id' => 'cid',
+            'client_secret' => 'csecret',
+        ],
+    ]);
+
+    $client->createVerification(['presentation_definition' => []]);
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'http://auth.example/token'
+        && $req->method() === 'POST');
+
+    Http::assertSent(fn (Request $req) => str_contains($req->url(), '/verifications')
+        && $req->hasHeader('Authorization', 'Bearer token-from-server'));
+});
+
+it('reuses a cached OAuth2 token for subsequent requests', function (): void {
+    \Illuminate\Support\Facades\Cache::flush();
+    \Illuminate\Support\Facades\Cache::put('swiss_eid_oauth_token', 'cached-token', 60);
+
+    Http::fake([
+        'localhost:8083/management/api/verifications/abc' => Http::response(['state' => 'PENDING'], 200),
+    ]);
+
+    $client = makeClient([
+        'auth' => [
+            'enabled' => true,
+            'token_url' => 'http://auth.example/token',
+            'client_id' => 'cid',
+            'client_secret' => 'csecret',
+        ],
+    ]);
+
+    $client->getVerification('abc');
+
+    Http::assertSent(fn (Request $req) => str_contains($req->url(), '/verifications/abc')
+        && $req->hasHeader('Authorization', 'Bearer cached-token'));
+    Http::assertNotSent(fn (Request $req) => str_contains($req->url(), 'auth.example'));
+});
+
+it('throws SwissEidException on 4xx when fetching a verification', function (): void {
+    Http::fake([
+        '*' => Http::response(['error' => 'Not found'], 404),
+    ]);
+
+    $client = makeClient();
+    $client->getVerification('missing');
+})->throws(SwissEidException::class);
+
+it('throws VerifierConnectionException when verifier is unreachable on create', function (): void {
+    Http::fake(function (): void {
+        throw new \Illuminate\Http\Client\ConnectionException('unreachable');
+    });
+
+    $client = makeClient();
+    $client->createVerification([]);
+})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException::class);
+
+it('throws VerifierConnectionException when verifier is unreachable on get', function (): void {
+    Http::fake(function (): void {
+        throw new \Illuminate\Http\Client\ConnectionException('unreachable');
+    });
+
+    $client = makeClient();
+    $client->getVerification('any');
+})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException::class);
+
+it('throws VerifierConnectionException when token endpoint is unreachable', function (): void {
+    \Illuminate\Support\Facades\Cache::flush();
+
+    Http::fake(function (): void {
+        throw new \Illuminate\Http\Client\ConnectionException('token endpoint down');
+    });
+
+    $client = makeClient([
+        'auth' => [
+            'enabled' => true,
+            'token_url' => 'http://auth.example/token',
+            'client_id' => 'cid',
+            'client_secret' => 'csecret',
+        ],
+    ]);
+
+    $client->createVerification([]);
+})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException::class);

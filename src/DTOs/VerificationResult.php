@@ -9,12 +9,14 @@ use SwissEid\LaravelSwissEid\Models\EidVerification;
 
 class VerificationResult
 {
+    /**
+     * @param  array<string, mixed>|null  $credentialData  Decrypted credential subject data, null if not yet available.
+     */
     public function __construct(
         /** Our internal DB UUID. */
         public readonly string $id,
         /** The current state of this verification. */
         public readonly VerificationState $state,
-        /** Decrypted credential subject data, null if not yet available. */
         public readonly ?array $credentialData,
         /** The underlying Eloquent model. */
         public readonly EidVerification $model,

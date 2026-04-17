@@ -4,6 +4,8 @@ parameters:
 
     level: 8
 
+    reportUnmatchedIgnoredErrors: false
+
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::#'
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::#'

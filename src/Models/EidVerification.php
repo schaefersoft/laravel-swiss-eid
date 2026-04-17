@@ -41,7 +41,7 @@ class EidVerification extends Model
     public $incrementing = false;
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'id',
@@ -59,19 +59,16 @@ class EidVerification extends Model
     ];
 
     /**
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'requested_fields' => 'array',
-            'credential_data' => 'encrypted:array',
-            'metadata' => 'array',
-            'state' => VerificationState::class,
-            'expires_at' => 'datetime',
-            'webhook_received_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'requested_fields' => 'array',
+        'credential_data' => 'encrypted:array',
+        'metadata' => 'array',
+        'state' => VerificationState::class,
+        'expires_at' => 'datetime',
+        'webhook_received_at' => 'datetime',
+    ];
 
     public function getTable(): string
     {

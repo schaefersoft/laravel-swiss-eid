@@ -1,10 +1,9 @@
 name: Tests
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-  pull_request:
 
 jobs:
   tests:
@@ -25,6 +24,20 @@ jobs:
             testbench: '10.*'
           - laravel: '13.*'
             testbench: '11.*'
+        exclude:
+          # Laravel 10 supports PHP 8.1–8.3
+          - laravel: '10.*'
+            php: '8.4'
+          - laravel: '10.*'
+            php: '8.5'
+          # Laravel 11 / 12 support PHP 8.2–8.4
+          - laravel: '11.*'
+            php: '8.5'
+          - laravel: '12.*'
+            php: '8.5'
+          # Laravel 13 supports PHP 8.3+
+          - laravel: '13.*'
+            php: '8.2'
 
     name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }}
 
