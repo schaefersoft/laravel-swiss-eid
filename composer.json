@@ -1,0 +1,65 @@
+{
+    "name": "schaefersoft/laravel-swiss-eid",
+    "description": "Laravel package for integrating the Swiss eID (swiyu) verification flow",
+    "keywords": ["laravel", "swiss-eid", "swiyu", "digital-id", "sd-jwt", "verifier"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "SchaeferSoft",
+            "email": "info@schaefersoft.ch"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "chillerlan/php-qrcode": "^5.0",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/events": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/database": "^10.0|^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0|^3.0",
+        "phpstan/phpstan": "^1.12|^2.0",
+        "phpstan/extension-installer": "^1.4",
+        "nunomaduro/larastan": "^2.9|^3.0",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "SwissEid\\LaravelSwissEid\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SwissEid\\LaravelSwissEid\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "SwissEid\\LaravelSwissEid\\SwissEidServiceProvider"
+            ],
+            "aliases": {
+                "SwissEid": "SwissEid\\LaravelSwissEid\\Facades\\SwissEid"
+            }
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "test:coverage": "pest --coverage --min=80",
+        "analyse": "phpstan analyse",
+        "format": "php-cs-fixer fix"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

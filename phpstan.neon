@@ -1,0 +1,18 @@
+includes:
+    - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    paths:
+        - src
+
+    level: 8
+
+    ignoreErrors:
+        # Eloquent magic
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::#'
+
+    excludePaths:
+        - vendor
+
+    checkMissingIterableValueType: false
