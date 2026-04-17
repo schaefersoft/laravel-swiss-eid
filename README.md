@@ -44,12 +44,14 @@ in place. Each sub-section below covers exactly one requirement.
 
 | Dependency | Version |
 |---|---|
-| PHP | `8.1+` |
-| Laravel | `10`, `11`, `12` (or `13-dev` via illuminate constraints) |
+| PHP | `8.1+` (runtime); CI tests `8.2`–`8.5` |
+| Laravel | `10`, `11`, `12`, `13` |
 | Composer | 2.x |
 
-The package uses PHP 8.1 native enums, readonly DTOs and `HasUuids`. If you are
-on an older Laravel version, pin to a matching minor release of this package.
+The package itself runs on PHP 8.1+ (uses native enums, readonly DTOs and
+`HasUuids`). CI only tests against PHP 8.2+ because the Pest/PHPUnit dev
+toolchain no longer resolves on PHP 8.1. Consumers on PHP 8.1 can still
+install and use the package without issue.
 
 ### 2. A running swiyu Verifier
 
