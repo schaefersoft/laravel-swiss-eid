@@ -225,6 +225,7 @@ environment variables:
 | `SWISS_EID_CLIENT_ID` | – | OAuth2 client ID (only if auth is enabled). |
 | `SWISS_EID_CLIENT_SECRET` | – | OAuth2 client secret (only if auth is enabled). |
 | `SWISS_EID_TABLE_NAME` | `eid_verifications` | Override the DB table name if it clashes with your schema. |
+| `SWISS_EID_USER_ID_TYPE` | `int` | Column type for `user_id`: `int` (unsignedBigInteger), `uuid`, or `string`. Set **before** running the migration. |
 
 ---
 
@@ -405,7 +406,7 @@ The package ships a single table (default name `eid_verifications`) with:
 |---|---|---|
 | `id` | UUID (PK) | Your internal ID — the one you hand to the frontend. |
 | `verifier_id` | string | The ID returned by the swiyu verifier. |
-| `user_id` | nullable | Your user reference (int or string). |
+| `user_id` | nullable | Your user reference. Column type depends on `SWISS_EID_USER_ID_TYPE` (`int` default, `uuid`, or `string`). |
 | `state` | enum | `pending`, `success`, `failed`, `expired`. |
 | `credential_type` | string | Mirrors `SWISS_EID_CREDENTIAL_TYPE`. |
 | `requested_fields` | json | The presentation-definition fields you requested. |
