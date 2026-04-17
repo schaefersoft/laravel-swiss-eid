@@ -41,7 +41,7 @@ class EidVerification extends Model
     public $incrementing = false;
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'id',

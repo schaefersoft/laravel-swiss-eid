@@ -20,7 +20,7 @@ use SwissEid\LaravelSwissEid\Models\EidVerification;
  *   // ... trigger code under test ...
  *   $fake->assertVerificationStarted();
  */
-class SwissEidFake extends SwissEidManager
+final class SwissEidFake extends SwissEidManager
 {
     /** @var list<PendingVerification> */
     private array $createdVerifications = [];
@@ -159,7 +159,7 @@ class SwissEidFake extends SwissEidManager
      * Assert that at least one verification result was fetched.
      * An optional callback receives each VerificationResult for deeper inspection.
      *
-     * @param  callable(VerificationResult): bool|void|null  $callback
+     * @param  (callable(VerificationResult): bool)|null  $callback
      */
     public function assertVerificationCompleted(?callable $callback = null): void
     {
