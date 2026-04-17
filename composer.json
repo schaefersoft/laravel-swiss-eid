@@ -1,7 +1,14 @@
 {
     "name": "schaefersoft/laravel-swiss-eid",
     "description": "Laravel package for integrating the Swiss eID (swiyu) verification flow",
-    "keywords": ["laravel", "swiss-eid", "swiyu", "digital-id", "sd-jwt", "verifier"],
+    "keywords": [
+        "laravel",
+        "swiss-eid",
+        "swiyu",
+        "digital-id",
+        "sd-jwt",
+        "verifier"
+    ],
     "type": "library",
     "license": "MIT",
     "authors": [
