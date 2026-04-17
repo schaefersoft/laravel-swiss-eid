@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.0...v0.2.1) (2026-04-17)
+
+
+### Bug Fixes
+
+* **core:** support different user_id datatypes for verifications ([7b93523](https://github.com/schaefersoft/laravel-swiss-eid/commit/7b935233ccc4ec32b5e50b589b095cd7c2b5ebfb))
+
 ## [0.2.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.1.0...v0.2.0) (2026-04-17)
 
 
