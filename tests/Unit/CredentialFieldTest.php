@@ -11,7 +11,7 @@ it('returns the correct json path for each field', function (CredentialField $fi
     [CredentialField::AgeOver16,    '$.age_over_16'],
     [CredentialField::GivenName,    '$.given_name'],
     [CredentialField::FamilyName,   '$.family_name'],
-    [CredentialField::DateOfBirth,  '$.date_of_birth'],
+    [CredentialField::DateOfBirth,  '$.birth_date'],
     [CredentialField::Nationality,  '$.nationality'],
     [CredentialField::PlaceOfBirth, '$.place_of_birth'],
     [CredentialField::Gender,       '$.gender'],
