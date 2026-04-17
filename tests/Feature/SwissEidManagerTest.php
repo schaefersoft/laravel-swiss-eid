@@ -116,3 +116,58 @@ it('fake assertVerificationCompleted fires after getVerification', function (): 
     SwissEid::getVerification(verifierIdOrModelId: $result->id);
     $fake->assertVerificationCompleted();
 });
+
+it('fake getVerification returns a default success when no predefined match', function (): void {
+    $fake = SwissEid::fake();
+
+    $result = SwissEid::getVerification(verifierIdOrModelId: 'unknown-id');
+
+    expect($result)->toBeInstanceOf(VerificationResult::class)
+        ->and($result->isSuccessful())->toBeTrue();
+});
+
+it('fake assertVerificationCompleted accepts a matching callback', function (): void {
+    $result = SwissEidFake::fakeVerification(state: 'success', data: ['given_name' => 'Anna']);
+    $fake = SwissEid::fake([$result->id => $result]);
+
+    SwissEid::getVerification(verifierIdOrModelId: $result->id);
+
+    $fake->assertVerificationCompleted(
+        fn (VerificationResult $r) => $r->get('given_name') === 'Anna',
+    );
+});
+
+it('fake assertVerificationCompleted fails when callback never matches', function (): void {
+    $result = SwissEidFake::fakeVerification(state: 'success', data: ['given_name' => 'Anna']);
+    $fake = SwissEid::fake([$result->id => $result]);
+
+    SwissEid::getVerification(verifierIdOrModelId: $result->id);
+
+    $fake->assertVerificationCompleted(
+        fn (VerificationResult $r) => $r->get('given_name') === 'Bob',
+    );
+})->throws(\PHPUnit\Framework\AssertionFailedError::class);
+
+it('manager fields() accepts CredentialField enum values', function (): void {
+    Http::fake([
+        'localhost:8083/*' => Http::response([
+            'id' => 'remote-fields',
+            'deeplink' => 'openid-vc://fields',
+            'verificationUrl' => 'http://localhost:8083/verify/fields',
+        ], 200),
+    ]);
+
+    SwissEid::verify()
+        ->fields([
+            \SwissEid\LaravelSwissEid\Enums\CredentialField::GivenName,
+            'family_name',
+        ])
+        ->create();
+
+    $record = EidVerification::where('verifier_id', 'remote-fields')->first();
+    expect($record)->not->toBeNull();
+});
+
+it('throws when fetching an unknown verification id', function (): void {
+    SwissEid::getVerification(verifierIdOrModelId: 'totally-missing');
+})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException::class);
