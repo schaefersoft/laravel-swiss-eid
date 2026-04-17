@@ -93,4 +93,7 @@ return [
     /** Database table name for storing verification records. */
     'table_name' => env('SWISS_EID_TABLE_NAME', 'eid_verifications'),
 
+    /** Column type for user_id: 'int' (unsignedBigInteger), 'uuid', or 'string'. */
+    'user_id_type' => env('SWISS_EID_USER_ID_TYPE', 'int'),
+
 ];

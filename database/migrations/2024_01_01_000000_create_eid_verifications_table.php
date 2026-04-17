@@ -10,10 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(config('swiss-eid.table_name', 'eid_verifications'), function (Blueprint $table): void {
+        $userIdType = config('swiss-eid.user_id_type', 'int');
+
+        Schema::create(config('swiss-eid.table_name', 'eid_verifications'), function (Blueprint $table) use ($userIdType): void {
             $table->uuid('id')->primary();
             $table->string('verifier_id')->index();
-            $table->unsignedBigInteger('user_id')->nullable()->index();
+            match ($userIdType) {
+                'uuid' => $table->uuid('user_id')->nullable()->index(),
+                'string' => $table->string('user_id')->nullable()->index(),
+                default => $table->unsignedBigInteger('user_id')->nullable()->index(),
+            };
             $table->string('state', 20)->default('pending')->index();
             $table->string('credential_type', 100);
             $table->json('requested_fields');
