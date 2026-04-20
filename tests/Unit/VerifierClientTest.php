@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
+use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
 use SwissEid\LaravelSwissEid\VerifierClient;
 
 function makeClient(array $override = []): VerifierClient
@@ -76,7 +79,7 @@ it('throws SwissEidException on 5xx response', function (): void {
 })->throws(SwissEidException::class);
 
 it('fetches an OAuth2 token and attaches it to verifier requests', function (): void {
-    \Illuminate\Support\Facades\Cache::flush();
+    Cache::flush();
 
     Http::fake([
         'auth.example/token' => Http::response([
@@ -107,8 +110,8 @@ it('fetches an OAuth2 token and attaches it to verifier requests', function (): 
 });
 
 it('reuses a cached OAuth2 token for subsequent requests', function (): void {
-    \Illuminate\Support\Facades\Cache::flush();
-    \Illuminate\Support\Facades\Cache::put('swiss_eid_oauth_token', 'cached-token', 60);
+    Cache::flush();
+    Cache::put('swiss_eid_oauth_token', 'cached-token', 60);
 
     Http::fake([
         'localhost:8083/management/api/verifications/abc' => Http::response(['state' => 'PENDING'], 200),
@@ -141,27 +144,27 @@ it('throws SwissEidException on 4xx when fetching a verification', function (): 
 
 it('throws VerifierConnectionException when verifier is unreachable on create', function (): void {
     Http::fake(function (): void {
-        throw new \Illuminate\Http\Client\ConnectionException('unreachable');
+        throw new ConnectionException('unreachable');
     });
 
     $client = makeClient();
     $client->createVerification([]);
-})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException::class);
+})->throws(VerifierConnectionException::class);
 
 it('throws VerifierConnectionException when verifier is unreachable on get', function (): void {
     Http::fake(function (): void {
-        throw new \Illuminate\Http\Client\ConnectionException('unreachable');
+        throw new ConnectionException('unreachable');
     });
 
     $client = makeClient();
     $client->getVerification('any');
-})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException::class);
+})->throws(VerifierConnectionException::class);
 
 it('throws VerifierConnectionException when token endpoint is unreachable', function (): void {
-    \Illuminate\Support\Facades\Cache::flush();
+    Cache::flush();
 
     Http::fake(function (): void {
-        throw new \Illuminate\Http\Client\ConnectionException('token endpoint down');
+        throw new ConnectionException('token endpoint down');
     });
 
     $client = makeClient([
@@ -174,4 +177,4 @@ it('throws VerifierConnectionException when token endpoint is unreachable', func
     ]);
 
     $client->createVerification([]);
-})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException::class);
+})->throws(VerifierConnectionException::class);

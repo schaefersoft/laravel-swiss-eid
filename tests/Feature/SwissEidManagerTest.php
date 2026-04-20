@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\AssertionFailedError;
 use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
 use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
+use SwissEid\LaravelSwissEid\Enums\CredentialField;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
+use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
 use SwissEid\LaravelSwissEid\Facades\SwissEid;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 use SwissEid\LaravelSwissEid\SwissEidFake;
@@ -146,7 +149,7 @@ it('fake assertVerificationCompleted fails when callback never matches', functio
     $fake->assertVerificationCompleted(
         fn (VerificationResult $r) => $r->get('given_name') === 'Bob',
     );
-})->throws(\PHPUnit\Framework\AssertionFailedError::class);
+})->throws(AssertionFailedError::class);
 
 it('manager fields() accepts CredentialField enum values', function (): void {
     Http::fake([
@@ -159,7 +162,7 @@ it('manager fields() accepts CredentialField enum values', function (): void {
 
     SwissEid::verify()
         ->fields([
-            \SwissEid\LaravelSwissEid\Enums\CredentialField::GivenName,
+            CredentialField::GivenName,
             'family_name',
         ])
         ->create();
@@ -170,4 +173,4 @@ it('manager fields() accepts CredentialField enum values', function (): void {
 
 it('throws when fetching an unknown verification id', function (): void {
     SwissEid::getVerification(verifierIdOrModelId: 'totally-missing');
-})->throws(\SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException::class);
+})->throws(VerificationNotFoundException::class);
