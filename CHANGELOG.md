@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.1...v0.2.2) (2026-04-20)
+
+
+### Miscellaneous Chores
+
+* add pint dependency ([3c25f85](https://github.com/schaefersoft/laravel-swiss-eid/commit/3c25f856dd7508a993a04438a203272d70ad622e))
+* run pint ([04a1f28](https://github.com/schaefersoft/laravel-swiss-eid/commit/04a1f287d56be77a02be229e8f3c4355dab38677))
+
 ## [0.2.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.0...v0.2.1) (2026-04-17)
 
 
