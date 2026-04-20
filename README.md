@@ -63,7 +63,7 @@ implement the OpenID4VP protocol itself.
 You need to run the official verifier locally (or host it somewhere) before
 this package can do anything:
 
-- Repository: <https://github.com/e-id-admin/eidch-verifier-agent-oid4vp>
+- Repository: <https://github.com/swiyu-admin-ch/swiyu-verifier>
 - Default port: `8083`
 - Expected API base path: `/management/api`
 
