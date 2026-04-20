@@ -36,7 +36,7 @@ final class SwissEidFake extends SwissEidManager
      */
     public static function make(array $responses = []): static
     {
-        $fake = new static(
+        $fake = new self(
             client: new VerifierClient([
                 'verifier' => ['base_url' => 'http://fake', 'management_path' => '/management/api', 'timeout' => 10],
                 'auth' => ['enabled' => false, 'token_url' => null, 'client_id' => null, 'client_secret' => null],

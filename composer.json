@@ -60,7 +60,8 @@
         "test": "pest",
         "test:coverage": "pest --coverage --min=80",
         "analyse": "phpstan analyse",
-        "format": "php-cs-fixer fix"
+        "format": "pint",
+        "format:check": "pint --test"
     },
     "config": {
         "sort-packages": true,
