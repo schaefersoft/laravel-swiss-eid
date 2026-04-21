@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.2...v0.2.3) (2026-04-21)
+
+
+### Miscellaneous Chores
+
+* add total downloads to readme ([e36af88](https://github.com/schaefersoft/laravel-swiss-eid/commit/e36af886698158e1a116ba1055adcb3145d790d3))
+
 ## [0.2.2](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.1...v0.2.2) (2026-04-20)
 
 
