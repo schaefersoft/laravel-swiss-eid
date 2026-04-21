@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/schaefersoft/laravel-swiss-eid/actions/workflows/tests.yml/badge.svg)](https://github.com/schaefersoft/laravel-swiss-eid/actions)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen)](https://phpstan.org)
+[![Total downloads](https://img.shields.io/packagist/dt/schaefersoft/laravel-swiss-eid)](https://packagist.org/packages/schaefersoft/laravel-swiss-eid)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/schaefersoft/laravel-swiss-eid.svg)](https://packagist.org/packages/schaefersoft/laravel-swiss-eid)
 [![License](https://img.shields.io/packagist/l/schaefersoft/laravel-swiss-eid.svg)](LICENSE)
 
