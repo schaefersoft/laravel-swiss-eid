@@ -24,11 +24,14 @@ class PresentationBuilder
 
     private string $kbJwtAlg = 'ES256';
 
-    public function __construct(string $credentialType, string $sdJwtAlg = 'ES256', string $kbJwtAlg = 'ES256')
+    private string $responseMode = 'direct_post';
+
+    public function __construct(string $credentialType, string $sdJwtAlg = 'ES256', string $kbJwtAlg = 'ES256', string $responseMode = 'direct_post')
     {
         $this->credentialType = $credentialType;
         $this->sdJwtAlg = $sdJwtAlg;
         $this->kbJwtAlg = $kbJwtAlg;
+        $this->responseMode = $responseMode;
     }
 
     /**
@@ -61,6 +64,16 @@ class PresentationBuilder
     public function setAcceptedIssuers(array $dids): self
     {
         $this->acceptedIssuers = $dids;
+
+        return $this;
+    }
+
+    /**
+     * Change the response mode (e.g. 'direct_post' or 'direct_post.jwt').
+     */
+    public function setResponseMode(string $mode): self
+    {
+        $this->responseMode = $mode;
 
         return $this;
     }
@@ -104,7 +117,7 @@ class PresentationBuilder
 
         return [
             'accepted_issuer_dids' => $this->acceptedIssuers,
-            'response_mode' => 'direct_post',
+            'response_mode' => $this->responseMode,
             'presentation_definition' => [
                 'id' => Str::uuid()->toString(),
                 'input_descriptors' => [

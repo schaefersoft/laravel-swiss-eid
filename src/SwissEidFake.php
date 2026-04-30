@@ -38,13 +38,13 @@ final class SwissEidFake extends SwissEidManager
     {
         $fake = new self(
             client: new VerifierClient([
-                'verifier' => ['base_url' => 'http://fake', 'management_path' => '/management/api', 'timeout' => 10],
+                'verifier' => ['base_url' => 'http://fake', 'management_path' => '/management/api', 'timeout' => 10, 'response_mode' => 'direct_post'],
                 'auth' => ['enabled' => false, 'token_url' => null, 'client_id' => null, 'client_secret' => null],
                 'credentials' => ['type' => 'test-sdjwt', 'sd_jwt_alg' => 'ES256', 'kb_jwt_alg' => 'ES256', 'accepted_issuers' => []],
                 'verification_ttl' => 300,
             ]),
             config: [
-                'verifier' => ['base_url' => 'http://fake', 'management_path' => '/management/api', 'timeout' => 10],
+                'verifier' => ['base_url' => 'http://fake', 'management_path' => '/management/api', 'timeout' => 10, 'response_mode' => 'direct_post'],
                 'auth' => ['enabled' => false, 'token_url' => null, 'client_id' => null, 'client_secret' => null],
                 'credentials' => ['type' => 'test-sdjwt', 'sd_jwt_alg' => 'ES256', 'kb_jwt_alg' => 'ES256', 'accepted_issuers' => []],
                 'polling' => ['enabled' => true, 'route_path' => '/swiss-eid/status'],

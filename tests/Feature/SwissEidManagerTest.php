@@ -171,6 +171,27 @@ it('manager fields() accepts CredentialField enum values', function (): void {
     expect($record)->not->toBeNull();
 });
 
+it('sends direct_post.jwt response mode when configured', function (): void {
+    Http::fake([
+        'localhost:8083/*' => Http::response([
+            'id' => 'remote-jwt-mode',
+            'deeplink' => 'openid-vc://start',
+            'verificationUrl' => 'http://localhost:8083/verify/jwt',
+        ], 200),
+    ]);
+
+    SwissEid::verify()
+        ->responseMode('direct_post.jwt')
+        ->ageOver18()
+        ->create();
+
+    Http::assertSent(function ($request) {
+        $body = $request->data();
+
+        return $body['response_mode'] === 'direct_post.jwt';
+    });
+});
+
 it('throws when fetching an unknown verification id', function (): void {
     SwissEid::getVerification(verifierIdOrModelId: 'totally-missing');
 })->throws(VerificationNotFoundException::class);

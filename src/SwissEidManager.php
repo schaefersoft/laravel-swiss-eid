@@ -105,6 +105,16 @@ class SwissEidManager
     }
 
     /**
+     * Override the response mode (e.g. 'direct_post.jwt' for encrypted wallet responses).
+     */
+    public function responseMode(string $mode): static
+    {
+        $this->builder->setResponseMode($mode);
+
+        return $this;
+    }
+
+    /**
      * Override the list of accepted issuer DIDs.
      *
      * @param  list<string>  $dids
@@ -216,6 +226,7 @@ class SwissEidManager
             credentialType: (string) ($this->config['credentials']['type'] ?? ''),
             sdJwtAlg: (string) ($this->config['credentials']['sd_jwt_alg'] ?? 'ES256'),
             kbJwtAlg: (string) ($this->config['credentials']['kb_jwt_alg'] ?? 'ES256'),
+            responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post'),
         );
 
         $issuers = array_values(array_filter(

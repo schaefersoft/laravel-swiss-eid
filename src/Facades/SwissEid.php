@@ -18,6 +18,7 @@ use SwissEid\LaravelSwissEid\SwissEidManager;
  * @method static SwissEidManager fields(array<int, string|CredentialField> $fields)
  * @method static SwissEidManager field(string $path)
  * @method static SwissEidManager credentialType(string $type)
+ * @method static SwissEidManager responseMode(string $mode)
  * @method static SwissEidManager acceptedIssuers(list<string> $dids)
  * @method static SwissEidManager forUser(int|string $userId)
  * @method static SwissEidManager metadata(array<string, mixed> $data)

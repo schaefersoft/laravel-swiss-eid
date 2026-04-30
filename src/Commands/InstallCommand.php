@@ -44,6 +44,9 @@ SWISS_EID_WEBHOOK_PATH=/swiss-eid/webhook
 SWISS_EID_WEBHOOK_KEY_HEADER=X-Verifier-Api-Key
 SWISS_EID_WEBHOOK_API_KEY=your-secret-key-here
 
+# Response mode ('direct_post' or 'direct_post.jwt' for encrypted wallet responses)
+SWISS_EID_RESPONSE_MODE=direct_post
+
 # Credentials
 SWISS_EID_CREDENTIAL_TYPE=
 SWISS_EID_ACCEPTED_ISSUERS=

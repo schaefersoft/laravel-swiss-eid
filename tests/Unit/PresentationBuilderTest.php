@@ -85,6 +85,28 @@ it('uses ES256 algorithms by default', function (): void {
     expect($format['kb-jwt_alg_values'])->toBe(['ES256']);
 });
 
+it('uses direct_post response mode by default', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post');
+});
+
+it('allows overriding response mode to direct_post.jwt', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $builder->setResponseMode('direct_post.jwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post.jwt');
+});
+
+it('accepts response mode via constructor', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt', responseMode: 'direct_post.jwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post.jwt');
+});
+
 it('generates unique UUIDs for each build()', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $first = $builder->build();

@@ -18,6 +18,7 @@ return [
         'base_url' => env('SWISS_EID_VERIFIER_URL', 'http://localhost:8083'),
         'management_path' => '/management/api',
         'timeout' => env('SWISS_EID_TIMEOUT', 10),
+        'response_mode' => env('SWISS_EID_RESPONSE_MODE', 'direct_post'),
     ],
 
     /*
