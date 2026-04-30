@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.3...v0.3.0) (2026-04-30)
+
+
+### Features
+
+* **core:** configurable response mode for wallet responses and update related tests, config, and documentation ([7d9d5c2](https://github.com/schaefersoft/laravel-swiss-eid/commit/7d9d5c27326db3c3bd6de7e57f7f8abf7f8e92cc))
+
+
+### Miscellaneous Chores
+
+* update default credential type from "betaid-sdjwt" to "test-sdjwt" in tests and config ([2f83bf3](https://github.com/schaefersoft/laravel-swiss-eid/commit/2f83bf3137dc02552fde505f5ddd9206ed901d6c))
+
 ## [0.2.3](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.2...v0.2.3) (2026-04-21)
 
 
