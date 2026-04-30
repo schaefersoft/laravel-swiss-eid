@@ -45,7 +45,7 @@ SWISS_EID_WEBHOOK_KEY_HEADER=X-Verifier-Api-Key
 SWISS_EID_WEBHOOK_API_KEY=your-secret-key-here
 
 # Credentials
-SWISS_EID_CREDENTIAL_TYPE=betaid-sdjwt
+SWISS_EID_CREDENTIAL_TYPE=
 SWISS_EID_ACCEPTED_ISSUERS=
 
 # OAuth2 (optional, only if your verifier requires it)

@@ -45,7 +45,7 @@ return [
     |
     */
     'credentials' => [
-        'type' => env('SWISS_EID_CREDENTIAL_TYPE', 'betaid-sdjwt'),
+        'type' => env('SWISS_EID_CREDENTIAL_TYPE'),
         'accepted_issuers' => array_filter(explode(',', (string) env('SWISS_EID_ACCEPTED_ISSUERS', ''))),
         'sd_jwt_alg' => 'ES256',
         'kb_jwt_alg' => 'ES256',

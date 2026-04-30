@@ -13,7 +13,7 @@ function makeResult(VerificationState $state, ?array $data = null): Verification
         'id' => 'test-uuid',
         'verifier_id' => 'verifier-uuid',
         'state' => $state,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => Carbon::now()->addMinutes(5),
     ]);

@@ -13,7 +13,7 @@ function makeVerification(Carbon $expiresAt, VerificationState $state = Verifica
         'id' => Str::uuid()->toString(),
         'verifier_id' => Str::uuid()->toString(),
         'state' => $state,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => $expiresAt,
     ]);

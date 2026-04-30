@@ -81,7 +81,7 @@ it('retrieves a verification result by local id', function (): void {
         'id' => Str::uuid()->toString(),
         'verifier_id' => 'get-test-01',
         'state' => VerificationState::Success,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => now()->addMinutes(5),
     ]);

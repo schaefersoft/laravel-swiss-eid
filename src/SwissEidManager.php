@@ -150,6 +150,14 @@ class SwissEidManager
      */
     public function create(): PendingVerification
     {
+        $credentialType = (string) ($this->config['credentials']['type'] ?? '');
+
+        if ($credentialType === '') {
+            throw new SwissEidException(
+                'No credential type configured. Set the SWISS_EID_CREDENTIAL_TYPE environment variable.',
+            );
+        }
+
         $payload = $this->builder->build();
         $response = $this->client->createVerification($payload);
 
@@ -205,7 +213,7 @@ class SwissEidManager
     private function newBuilder(): PresentationBuilder
     {
         $builder = new PresentationBuilder(
-            credentialType: (string) ($this->config['credentials']['type'] ?? 'betaid-sdjwt'),
+            credentialType: (string) ($this->config['credentials']['type'] ?? ''),
             sdJwtAlg: (string) ($this->config['credentials']['sd_jwt_alg'] ?? 'ES256'),
             kbJwtAlg: (string) ($this->config['credentials']['kb_jwt_alg'] ?? 'ES256'),
         );

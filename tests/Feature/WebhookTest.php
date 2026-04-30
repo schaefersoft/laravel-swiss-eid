@@ -23,7 +23,7 @@ function createVerificationRecord(string $verifierId = 'verifier-abc'): EidVerif
         'id' => Str::uuid()->toString(),
         'verifier_id' => $verifierId,
         'state' => VerificationState::Pending,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => Carbon::now()->addMinutes(5),
     ]);
