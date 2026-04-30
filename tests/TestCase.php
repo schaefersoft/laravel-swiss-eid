@@ -32,7 +32,7 @@ class TestCase extends Orchestra
 
         config()->set('swiss-eid.verifier.base_url', 'http://localhost:8083');
         config()->set('swiss-eid.webhook.api_key', 'test-webhook-secret');
-        config()->set('swiss-eid.credentials.type', 'betaid-sdjwt');
+        config()->set('swiss-eid.credentials.type', 'test-sdjwt');
         config()->set('swiss-eid.verification_ttl', 300);
     }
 

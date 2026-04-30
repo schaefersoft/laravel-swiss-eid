@@ -216,7 +216,8 @@ environment variables:
 | `SWISS_EID_WEBHOOK_PATH` | `/swiss-eid/webhook` | Route the verifier POSTs to when a wallet has responded. |
 | `SWISS_EID_WEBHOOK_KEY_HEADER` | `X-Verifier-Api-Key` | HTTP header carrying the shared webhook secret. |
 | `SWISS_EID_WEBHOOK_API_KEY` | – | Shared secret; **required** — the middleware returns 401 without it. |
-| `SWISS_EID_CREDENTIAL_TYPE` | `betaid-sdjwt` | Credential type (`vct`) to request from the wallet. |
+| `SWISS_EID_RESPONSE_MODE` | `direct_post` | Response mode for wallet responses. Use `direct_post.jwt` for encrypted wallet-to-verifier transport (requires verifier v2.3.1+). |
+| `SWISS_EID_CREDENTIAL_TYPE` | – | Credential type (`vct`) to request from the wallet. **Required** — set to the vct matching your swiyu environment. |
 | `SWISS_EID_ACCEPTED_ISSUERS` | – | Comma-separated list of accepted issuer DIDs. At least one is required. |
 | `SWISS_EID_VERIFICATION_TTL` | `300` | Seconds a pending verification stays valid before being marked `expired`. |
 | `SWISS_EID_POLLING_ENABLED` | `true` | Enable the built-in `/swiss-eid/status/{id}` JSON endpoint. |
@@ -294,7 +295,7 @@ SwissEid::verify()->field('$.custom_path');  // passed through verbatim
 
 ```php
 SwissEid::verify()
-    ->credentialType('betaid-sdjwt')
+    ->credentialType('your-credential-type')
     ->acceptedIssuers([
         'did:tdw:QmPEZ...your-trusted-issuer',
     ])

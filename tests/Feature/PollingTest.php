@@ -19,7 +19,7 @@ it('returns pending state for a pending verification', function (): void {
         'id' => Str::uuid()->toString(),
         'verifier_id' => 'poll-test-01',
         'state' => VerificationState::Pending,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => Carbon::now()->addMinutes(5),
     ]);
@@ -37,7 +37,7 @@ it('returns success state for a completed verification', function (): void {
         'id' => Str::uuid()->toString(),
         'verifier_id' => 'poll-test-02',
         'state' => VerificationState::Success,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => Carbon::now()->addMinutes(5),
     ]);
@@ -57,7 +57,7 @@ it('marks expired verifications and fires VerificationExpired event', function (
         'id' => Str::uuid()->toString(),
         'verifier_id' => 'poll-test-expired',
         'state' => VerificationState::Pending,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => Carbon::now()->subMinutes(1), // already expired
     ]);

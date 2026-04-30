@@ -105,6 +105,16 @@ class SwissEidManager
     }
 
     /**
+     * Override the response mode (e.g. 'direct_post.jwt' for encrypted wallet responses).
+     */
+    public function responseMode(string $mode): static
+    {
+        $this->builder->setResponseMode($mode);
+
+        return $this;
+    }
+
+    /**
      * Override the list of accepted issuer DIDs.
      *
      * @param  list<string>  $dids
@@ -150,6 +160,14 @@ class SwissEidManager
      */
     public function create(): PendingVerification
     {
+        $credentialType = (string) ($this->config['credentials']['type'] ?? '');
+
+        if ($credentialType === '') {
+            throw new SwissEidException(
+                'No credential type configured. Set the SWISS_EID_CREDENTIAL_TYPE environment variable.',
+            );
+        }
+
         $payload = $this->builder->build();
         $response = $this->client->createVerification($payload);
 
@@ -205,9 +223,10 @@ class SwissEidManager
     private function newBuilder(): PresentationBuilder
     {
         $builder = new PresentationBuilder(
-            credentialType: (string) ($this->config['credentials']['type'] ?? 'betaid-sdjwt'),
+            credentialType: (string) ($this->config['credentials']['type'] ?? ''),
             sdJwtAlg: (string) ($this->config['credentials']['sd_jwt_alg'] ?? 'ES256'),
             kbJwtAlg: (string) ($this->config['credentials']['kb_jwt_alg'] ?? 'ES256'),
+            responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post'),
         );
 
         $issuers = array_values(array_filter(

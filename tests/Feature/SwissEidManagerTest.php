@@ -81,7 +81,7 @@ it('retrieves a verification result by local id', function (): void {
         'id' => Str::uuid()->toString(),
         'verifier_id' => 'get-test-01',
         'state' => VerificationState::Success,
-        'credential_type' => 'betaid-sdjwt',
+        'credential_type' => 'test-sdjwt',
         'requested_fields' => [],
         'expires_at' => now()->addMinutes(5),
     ]);
@@ -169,6 +169,27 @@ it('manager fields() accepts CredentialField enum values', function (): void {
 
     $record = EidVerification::where('verifier_id', 'remote-fields')->first();
     expect($record)->not->toBeNull();
+});
+
+it('sends direct_post.jwt response mode when configured', function (): void {
+    Http::fake([
+        'localhost:8083/*' => Http::response([
+            'id' => 'remote-jwt-mode',
+            'deeplink' => 'openid-vc://start',
+            'verificationUrl' => 'http://localhost:8083/verify/jwt',
+        ], 200),
+    ]);
+
+    SwissEid::verify()
+        ->responseMode('direct_post.jwt')
+        ->ageOver18()
+        ->create();
+
+    Http::assertSent(function ($request) {
+        $body = $request->data();
+
+        return $body['response_mode'] === 'direct_post.jwt';
+    });
 });
 
 it('throws when fetching an unknown verification id', function (): void {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use SwissEid\LaravelSwissEid\PresentationBuilder;
 
 it('builds a valid presentation definition with vct constraint', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $result = $builder->build();
 
     expect($result)
@@ -19,12 +19,12 @@ it('builds a valid presentation definition with vct constraint', function (): vo
     expect($descriptor['constraints']['fields'][0])
         ->toBe([
             'path' => ['$.vct'],
-            'filter' => ['type' => 'string', 'const' => 'betaid-sdjwt'],
+            'filter' => ['type' => 'string', 'const' => 'test-sdjwt'],
         ]);
 });
 
 it('adds age_over_18 field', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addAgeOver18();
     $result = $builder->build();
 
@@ -35,7 +35,7 @@ it('adds age_over_18 field', function (): void {
 });
 
 it('adds age_over_16 field', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addAgeOver16();
     $result = $builder->build();
 
@@ -46,7 +46,7 @@ it('adds age_over_16 field', function (): void {
 });
 
 it('adds arbitrary fields via addField()', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addField('$.given_name')->addField('$.family_name');
     $result = $builder->build();
 
@@ -57,7 +57,7 @@ it('adds arbitrary fields via addField()', function (): void {
 });
 
 it('does not duplicate fields', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addField('$.given_name')->addField('$.given_name');
     $result = $builder->build();
 
@@ -69,7 +69,7 @@ it('does not duplicate fields', function (): void {
 
 it('sets accepted issuer dids', function (): void {
     $dids = ['did:example:123', 'did:example:456'];
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->setAcceptedIssuers($dids);
     $result = $builder->build();
 
@@ -77,7 +77,7 @@ it('sets accepted issuer dids', function (): void {
 });
 
 it('uses ES256 algorithms by default', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $result = $builder->build();
 
     $format = $result['presentation_definition']['input_descriptors'][0]['format']['vc+sd-jwt'];
@@ -85,8 +85,30 @@ it('uses ES256 algorithms by default', function (): void {
     expect($format['kb-jwt_alg_values'])->toBe(['ES256']);
 });
 
+it('uses direct_post response mode by default', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post');
+});
+
+it('allows overriding response mode to direct_post.jwt', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $builder->setResponseMode('direct_post.jwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post.jwt');
+});
+
+it('accepts response mode via constructor', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt', responseMode: 'direct_post.jwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post.jwt');
+});
+
 it('generates unique UUIDs for each build()', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'betaid-sdjwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $first = $builder->build();
     $second = $builder->build();
 
