@@ -19,6 +19,7 @@ return [
         'management_path' => '/management/api',
         'timeout' => env('SWISS_EID_TIMEOUT', 10),
         'response_mode' => env('SWISS_EID_RESPONSE_MODE', 'direct_post'),
+        'private_key' => env('SWISS_EID_PRIVATE_KEY'),
     ],
 
     /*

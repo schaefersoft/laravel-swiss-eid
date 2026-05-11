@@ -168,7 +168,7 @@ class DoctorCommand extends Command
     private function checkPemKey(): void
     {
         $mode = config('swiss-eid.verifier.response_mode');
-        $pem  = env('SWISS_EID_PRIVATE_KEY');
+        $pem  = (string) config('swiss-eid.verifier.private_key', '');
 
         if (empty($pem)) {
             if ($mode === 'direct_post.jwt') {
@@ -193,7 +193,7 @@ class DoctorCommand extends Command
 
         /** @var array{type: int, bits: int, ec?: array{curve_name: string}} $details */
         $details = openssl_pkey_get_details($key);
-        $type    = match ($details['type'] ?? -1) {
+        $type    = match ($details['type']) {
             OPENSSL_KEYTYPE_EC  => 'EC',
             OPENSSL_KEYTYPE_RSA => 'RSA',
             default             => 'Unknown',
