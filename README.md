@@ -15,6 +15,111 @@ Vue, React, or anything else.
 
 ---
 
+## 5-Minute Quickstart
+
+> This package is a **client for the swiyu Verifier** — the Spring Boot service
+> that speaks OpenID4VP to the wallet app. You need that verifier running before
+> anything else works.
+
+### Step 1 — Start the verifier locally
+
+```bash
+git clone https://github.com/swiyu-admin-ch/swiyu-verifier
+cd swiyu-verifier
+docker compose up -d
+# Listening on http://localhost:8083
+```
+
+The wallet app on the user's phone must be able to reach the verifier, so expose
+it through a public tunnel during local development:
+
+```bash
+ngrok http 8083
+# → https://abc123.ngrok-free.app  (use this URL in .env below)
+```
+
+### Step 2 — Install the package
+
+```bash
+composer require schaefersoft/laravel-swiss-eid
+php artisan swiss-eid:install
+```
+
+The installer publishes the config file and migration, prints all required `.env`
+variables, and optionally runs `php artisan migrate`.
+
+### Step 3 — Fill in .env
+
+```env
+SWISS_EID_VERIFIER_URL=https://abc123.ngrok-free.app
+SWISS_EID_WEBHOOK_API_KEY=a-secret-key-at-least-32-characters-long
+
+# From your swiyu verifier configuration:
+SWISS_EID_CREDENTIAL_TYPE=https://eid.admin.ch/credentials/swiss-eid-beta/1.0
+SWISS_EID_ACCEPTED_ISSUERS=did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
+```
+
+### Step 4 — Start a verification and show the QR code
+
+```php
+use SwissEid\LaravelSwissEid\Facades\SwissEid;
+
+$pending = SwissEid::verify()
+    ->ageOver18()
+    ->forUser(auth()->id())
+    ->create();
+
+// $pending->qrCode()    → SVG string, embed with {!! !!}
+// $pending->deeplink    → universal link to open the wallet app directly
+// $pending->statusUrl() → JSON polling endpoint for your frontend
+// $pending->id          → UUID to look up the result later
+```
+
+```blade
+{{-- resources/views/verify.blade.php --}}
+{!! $pending->qrCode(300) !!}
+<a href="{{ $pending->deeplink }}">Open in Swiss Wallet App</a>
+```
+
+### Step 5 — React to the result
+
+Once the wallet has scanned the QR code the verifier fires the webhook. Listen
+to the event:
+
+```php
+use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
+
+Event::listen(VerificationCompleted::class, function ($event) {
+    $result = $event->verification->toResult();
+
+    if ($result->isSuccessful() && $result->isAdult()) {
+        $user->update(['verified_at' => now()]);
+    }
+});
+```
+
+Or poll the status endpoint from the frontend:
+
+```js
+const poll = async (statusUrl) => {
+    const { state, label, is_terminal } = await fetch(statusUrl).then(r => r.json());
+    document.querySelector('#status').textContent = label; // "Pending" / "Successful" …
+    if (!is_terminal) setTimeout(() => poll(statusUrl), 2500);
+};
+poll('{{ $pending->statusUrl() }}');
+```
+
+### Verify your setup
+
+```bash
+php artisan swiss-eid:doctor
+```
+
+Validates all ENV variables, parses the private key, checks DID formats, and
+probes webhook reachability — in one pass.
+
+---
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -656,6 +761,3 @@ php artisan swiss-eid:test-connection # targeted verifier connectivity probe
 ## License
 
 MIT. See [LICENSE](LICENSE) for details.
-
-
-Trigger
