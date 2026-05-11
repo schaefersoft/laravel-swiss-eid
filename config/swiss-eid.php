@@ -89,7 +89,7 @@ return [
     */
 
     /** Seconds until a pending verification expires. */
-    'verification_ttl' => env('SWISS_EID_VERIFICATION_TTL', 300),
+    'verification_ttl' => env('SWISS_EID_VERIFICATION_TTL', 600),
 
     /** Database table name for storing verification records. */
     'table_name' => env('SWISS_EID_TABLE_NAME', 'eid_verifications'),
