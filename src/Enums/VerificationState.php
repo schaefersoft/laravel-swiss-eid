@@ -22,16 +22,8 @@ enum VerificationState: string
         };
     }
 
-    /**
-     * Human-readable German label.
-     */
     public function label(): string
     {
-        return match ($this) {
-            self::Pending => 'Ausstehend',
-            self::Success => 'Erfolgreich',
-            self::Failed => 'Fehlgeschlagen',
-            self::Expired => 'Abgelaufen',
-        };
+        return (string) trans('swiss-eid::states.'.$this->value);
     }
 }

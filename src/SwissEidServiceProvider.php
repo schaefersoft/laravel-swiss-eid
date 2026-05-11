@@ -36,6 +36,7 @@ class SwissEidServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../routes/swiss-eid.php');
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'swiss-eid');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -45,6 +46,10 @@ class SwissEidServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../database/migrations' => database_path('migrations'),
             ], 'swiss-eid-migrations');
+
+            $this->publishes([
+                __DIR__.'/../lang' => lang_path('vendor/swiss-eid'),
+            ], 'swiss-eid-lang');
 
             $this->commands([
                 InstallCommand::class,
