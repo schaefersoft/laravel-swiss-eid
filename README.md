@@ -15,6 +15,111 @@ Vue, React, or anything else.
 
 ---
 
+## 5-Minute Quickstart
+
+> This package is a **client for the swiyu Verifier** — the Spring Boot service
+> that speaks OpenID4VP to the wallet app. You need that verifier running before
+> anything else works.
+
+### Step 1 — Start the verifier locally
+
+```bash
+git clone https://github.com/swiyu-admin-ch/swiyu-verifier
+cd swiyu-verifier
+docker compose up -d
+# Listening on http://localhost:8083
+```
+
+The wallet app on the user's phone must be able to reach the verifier, so expose
+it through a public tunnel during local development:
+
+```bash
+ngrok http 8083
+# → https://abc123.ngrok-free.app  (use this URL in .env below)
+```
+
+### Step 2 — Install the package
+
+```bash
+composer require schaefersoft/laravel-swiss-eid
+php artisan swiss-eid:install
+```
+
+The installer publishes the config file and migration, prints all required `.env`
+variables, and optionally runs `php artisan migrate`.
+
+### Step 3 — Fill in .env
+
+```env
+SWISS_EID_VERIFIER_URL=https://abc123.ngrok-free.app
+SWISS_EID_WEBHOOK_API_KEY=a-secret-key-at-least-32-characters-long
+
+# From your swiyu verifier configuration:
+SWISS_EID_CREDENTIAL_TYPE=https://eid.admin.ch/credentials/swiss-eid-beta/1.0
+SWISS_EID_ACCEPTED_ISSUERS=did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
+```
+
+### Step 4 — Start a verification and show the QR code
+
+```php
+use SwissEid\LaravelSwissEid\Facades\SwissEid;
+
+$pending = SwissEid::verify()
+    ->ageOver18()
+    ->forUser(auth()->id())
+    ->create();
+
+// $pending->qrCode()    → SVG string, embed with {!! !!}
+// $pending->deeplink    → universal link to open the wallet app directly
+// $pending->statusUrl() → JSON polling endpoint for your frontend
+// $pending->id          → UUID to look up the result later
+```
+
+```blade
+{{-- resources/views/verify.blade.php --}}
+{!! $pending->qrCode(300) !!}
+<a href="{{ $pending->deeplink }}">Open in Swiss Wallet App</a>
+```
+
+### Step 5 — React to the result
+
+Once the wallet has scanned the QR code the verifier fires the webhook. Listen
+to the event:
+
+```php
+use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
+
+Event::listen(VerificationCompleted::class, function ($event) {
+    $result = $event->verification->toResult();
+
+    if ($result->isSuccessful() && $result->isAdult()) {
+        $user->update(['verified_at' => now()]);
+    }
+});
+```
+
+Or poll the status endpoint from the frontend:
+
+```js
+const poll = async (statusUrl) => {
+    const { state, label, is_terminal } = await fetch(statusUrl).then(r => r.json());
+    document.querySelector('#status').textContent = label; // "Pending" / "Successful" …
+    if (!is_terminal) setTimeout(() => poll(statusUrl), 2500);
+};
+poll('{{ $pending->statusUrl() }}');
+```
+
+### Verify your setup
+
+```bash
+php artisan swiss-eid:doctor
+```
+
+Validates all ENV variables, parses the private key, checks DID formats, and
+probes webhook reachability — in one pass.
+
+---
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -27,8 +132,10 @@ Vue, React, or anything else.
 2. [Installation](#installation)
 3. [Configuration](#configuration)
 4. [Usage](#usage)
+    - [Localising status labels](#localising-status-labels)
 5. [Database](#database)
 6. [Artisan Commands](#artisan-commands)
+    - [swiss-eid:doctor](#swiss-eiddoctor)
 7. [Testing](#testing)
 8. [Troubleshooting](#troubleshooting)
 9. [Contributing](#contributing)
@@ -333,9 +440,63 @@ The polling endpoint returns JSON:
 }
 ```
 
+`label` is resolved via Laravel's translation system and automatically respects
+`App::getLocale()`. See [Localising status labels](#localising-status-labels)
+below for details.
+
 Poll every 2–3 seconds until `is_terminal === true`. If the TTL has passed,
 the endpoint will also flip `pending` → `expired` on the first call after
 expiry and dispatch the `VerificationExpired` event.
+
+### Localising status labels
+
+The polling endpoint's `label` field and `VerificationState::label()` are driven
+by Laravel's translation system under the `swiss-eid::states` namespace. The
+package ships translations for **German (de), French (fr), Italian (it), and
+English (en)**.
+
+The active locale (`App::getLocale()`) is used automatically — no configuration
+needed. If the locale falls through to a string that does not exist in the
+package's files (e.g. `es`), Laravel's fallback locale applies next, and then
+the translation key itself is returned as-is.
+
+**Customising or adding languages**
+
+Publish the translation files once:
+
+```bash
+php artisan vendor:publish --tag=swiss-eid-lang
+```
+
+This copies the four files to `lang/vendor/swiss-eid/{de,en,fr,it}/states.php`.
+Published files take priority over the package originals. Edit them freely:
+
+```php
+// lang/vendor/swiss-eid/de/states.php
+return [
+    'pending' => 'Wartet auf Bestätigung',   // custom wording
+    'success' => 'Erfolgreich',
+    'failed'  => 'Fehlgeschlagen',
+    'expired' => 'Abgelaufen',
+];
+```
+
+To support an additional language, add a new locale directory alongside the
+existing ones — e.g. `lang/vendor/swiss-eid/es/states.php` with Spanish labels.
+
+**Using `label()` directly**
+
+`VerificationState::label()` resolves the same translation keys, so it works
+anywhere — not just in the polling JSON:
+
+```php
+use SwissEid\LaravelSwissEid\Enums\VerificationState;
+
+$state = VerificationState::Pending;
+echo $state->label();  // "Ausstehend" (de), "Pending" (en), …
+```
+
+---
 
 ### Handling the webhook
 
@@ -440,12 +601,88 @@ single-line change.
 | `swiss-eid:install` | Publish config + migration, print required `.env` variables, optionally run migrations. |
 | `swiss-eid:test-connection` | Probe the verifier to confirm it is reachable and responding. |
 | `swiss-eid:cleanup --days=7` | Delete expired records older than N days. Accepts `--dry-run`. |
+| `swiss-eid:doctor` | Validate the full configuration, parse the private key, check DID formats, and probe the webhook URL. |
 
 Schedule the cleanup in `App\Console\Kernel` (or `routes/console.php` on
 Laravel 11+):
 
 ```php
 $schedule->command('swiss-eid:cleanup --days=30')->daily();
+```
+
+### swiss-eid:doctor
+
+```bash
+php artisan swiss-eid:doctor
+```
+
+A self-contained diagnostic that works through every aspect of the configuration
+in one pass and exits with a non-zero code if any check fails — useful in CI
+pipelines or as a post-deploy smoke test.
+
+**Checks performed**
+
+| Section | What is validated |
+|---|---|
+| **Verifier** | `SWISS_EID_VERIFIER_URL` is a valid URL · timeout is a positive integer · `SWISS_EID_RESPONSE_MODE` is `direct_post` or `direct_post.jwt` |
+| **Webhook** | Path starts with `/` · header name is set · `SWISS_EID_WEBHOOK_API_KEY` is set and ≥ 32 characters (warns if shorter) |
+| **Credentials** | `SWISS_EID_CREDENTIAL_TYPE` (vct) is set · at least one accepted issuer is configured |
+| **OAuth2 Auth** | Skipped when `SWISS_EID_AUTH_ENABLED=false`; otherwise validates token URL, client ID and secret |
+| **General** | `SWISS_EID_VERIFICATION_TTL` is a positive integer (warns if < 60 s) · `SWISS_EID_USER_ID_TYPE` is one of `int`, `uuid`, `string` |
+| **Private Key** | Reads `SWISS_EID_PRIVATE_KEY`, parses it with OpenSSL, confirms the key type is EC and the curve is P-256 (`prime256v1`); reports key type and bit count. Required when `response_mode=direct_post.jwt`. |
+| **DID Formats** | Each entry in `SWISS_EID_ACCEPTED_ISSUERS` matches `did:[method]:[id]` |
+| **Webhook Reachability** | POSTs to `APP_URL + webhook.path` without credentials: `401`/`403` → correctly protected; `404` → route not found; connection error → not publicly reachable |
+
+**Private key check**
+
+The doctor command reads the private key directly from the environment (not from
+the config file) so that the raw value can be passed to OpenSSL. Store it in
+`.env` using double-quoted multi-line syntax to preserve real newlines:
+
+```env
+SWISS_EID_PRIVATE_KEY="-----BEGIN EC PRIVATE KEY-----
+MHQCAQEEIBFv...
+-----END EC PRIVATE KEY-----"
+```
+
+Single-line values with escaped `\n` sequences also work — the command
+normalises them before parsing.
+
+**Exit codes**
+
+| Code | Meaning |
+|---|---|
+| `0` | All checks passed (warnings are informational only). |
+| `1` | One or more errors found. |
+
+**Example output**
+
+```
+Swiss eID Doctor — configuration diagnostics
+
+  Verifier
+    ✓ Verifier URL: https://verifier.example.com
+    ✓ Timeout: 10s
+    ✓ Response mode: direct_post.jwt
+
+  Webhook
+    ✓ Webhook path: /swiss-eid/webhook
+    ✓ API key header: X-Verifier-Api-Key
+    ! SWISS_EID_WEBHOOK_API_KEY is shorter than 32 characters — consider a stronger secret
+
+  ...
+
+  Private Key (JWT response mode)
+    ✓ EC private key valid — curve: P-256 (prime256v1), bits: 256
+
+  DID Formats (accepted_issuers)
+    ✓ Valid DID (method: did:tdw:…) — did:tdw:QmPEZ…
+
+  Webhook Reachability
+      Probing: https://your-app.example.com/swiss-eid/webhook
+    ✓ Webhook reachable — HTTP 401 (auth middleware is rejecting unauthenticated requests correctly)
+
+  1 warning(s) — review before going to production.
 ```
 
 ---
@@ -502,10 +739,11 @@ composer analyse         # PHPStan level 8
 | State is always `failed` with `issuer_not_accepted` | The credential's issuer DID is not in `SWISS_EID_ACCEPTED_ISSUERS`. | Add the real issuer DID (extract from wallet logs / decoded SD-JWT). |
 | Wallet shows "Kein passender Nachweis verfügbar" | Requested field name does not match the credential schema (e.g. `date_of_birth` vs `birth_date`). | Use the `CredentialField` enum — the package maps the correct keys. |
 
-Quick sanity check:
+Quick sanity checks:
 
 ```bash
-php artisan swiss-eid:test-connection
+php artisan swiss-eid:doctor          # full config + reachability diagnostics
+php artisan swiss-eid:test-connection # targeted verifier connectivity probe
 ```
 
 ---
@@ -523,6 +761,3 @@ php artisan swiss-eid:test-connection
 ## License
 
 MIT. See [LICENSE](LICENSE) for details.
-
-
-Trigger

@@ -19,6 +19,7 @@ return [
         'management_path' => '/management/api',
         'timeout' => env('SWISS_EID_TIMEOUT', 10),
         'response_mode' => env('SWISS_EID_RESPONSE_MODE', 'direct_post'),
+        'private_key' => env('SWISS_EID_PRIVATE_KEY'),
     ],
 
     /*
@@ -89,7 +90,7 @@ return [
     */
 
     /** Seconds until a pending verification expires. */
-    'verification_ttl' => env('SWISS_EID_VERIFICATION_TTL', 300),
+    'verification_ttl' => env('SWISS_EID_VERIFICATION_TTL', 600),
 
     /** Database table name for storing verification records. */
     'table_name' => env('SWISS_EID_TABLE_NAME', 'eid_verifications'),
