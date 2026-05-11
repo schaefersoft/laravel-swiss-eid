@@ -242,7 +242,7 @@ class DoctorCommand extends Command
         $webhookPath = (string) config('swiss-eid.webhook.path', '/swiss-eid/webhook');
 
         if (empty($appUrl) || in_array($appUrl, ['http://localhost', 'https://localhost'], true)) {
-            $this->checkWarn('APP_URL is localhost — skipping external reachability check');
+            $this->checkOk('APP_URL is localhost — skipping external reachability check');
 
             return;
         }
