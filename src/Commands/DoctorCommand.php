@@ -168,7 +168,7 @@ class DoctorCommand extends Command
     private function checkPemKey(): void
     {
         $mode = config('swiss-eid.verifier.response_mode');
-        $pem  = (string) config('swiss-eid.verifier.private_key', '');
+        $pem = (string) config('swiss-eid.verifier.private_key', '');
 
         if (empty($pem)) {
             if ($mode === 'direct_post.jwt') {
@@ -193,10 +193,10 @@ class DoctorCommand extends Command
 
         /** @var array{type: int, bits: int, ec?: array{curve_name: string}} $details */
         $details = openssl_pkey_get_details($key);
-        $type    = match ($details['type']) {
-            OPENSSL_KEYTYPE_EC  => 'EC',
+        $type = match ($details['type']) {
+            OPENSSL_KEYTYPE_EC => 'EC',
             OPENSSL_KEYTYPE_RSA => 'RSA',
-            default             => 'Unknown',
+            default => 'Unknown',
         };
 
         if ($type === 'EC') {
@@ -230,7 +230,7 @@ class DoctorCommand extends Command
                 $this->checkFail("Invalid DID format: {$did}");
             } else {
                 [, $method] = explode(':', $did, 3);
-                $preview    = mb_strlen($did) > 60 ? mb_substr($did, 0, 57).'…' : $did;
+                $preview = mb_strlen($did) > 60 ? mb_substr($did, 0, 57).'…' : $did;
                 $this->checkOk("Valid DID (method: did:{$method}:…) — {$preview}");
             }
         }
@@ -238,7 +238,7 @@ class DoctorCommand extends Command
 
     private function checkWebhookReachability(): void
     {
-        $appUrl     = rtrim((string) config('app.url', ''), '/');
+        $appUrl = rtrim((string) config('app.url', ''), '/');
         $webhookPath = (string) config('swiss-eid.webhook.path', '/swiss-eid/webhook');
 
         if (empty($appUrl) || in_array($appUrl, ['http://localhost', 'https://localhost'], true)) {
@@ -262,11 +262,11 @@ class DoctorCommand extends Command
             if (in_array($status, [401, 403], true)) {
                 $this->checkOk("Webhook reachable — HTTP {$status} (auth middleware is rejecting unauthenticated requests correctly)");
             } elseif ($status === 405) {
-                $this->checkOk("Webhook reachable — HTTP 405 (route exists, method check active)");
+                $this->checkOk('Webhook reachable — HTTP 405 (route exists, method check active)');
             } elseif ($status === 200) {
-                $this->checkWarn("Webhook returned 200 without an API key — verify VerifyWebhookApiKey middleware is applied");
+                $this->checkWarn('Webhook returned 200 without an API key — verify VerifyWebhookApiKey middleware is applied');
             } elseif ($status === 404) {
-                $this->checkFail("Webhook returned 404 — route not registered or APP_URL does not match the running app");
+                $this->checkFail('Webhook returned 404 — route not registered or APP_URL does not match the running app');
             } else {
                 $this->checkWarn("Webhook returned HTTP {$status} — verify the endpoint is correctly configured");
             }
