@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.3.0...v0.4.0) (2026-05-11)
+
+
+### Features
+
+* **core:** localizable verficaition states ([6c85141](https://github.com/schaefersoft/laravel-swiss-eid/commit/6c85141baf842d437d717dcf38264165f46be7cb))
+* doctor command ([cda387e](https://github.com/schaefersoft/laravel-swiss-eid/commit/cda387e94d18c021beb24bbe78c685b51add9772))
+
+
+### Bug Fixes
+
+* doctor command test issues ([9bbd185](https://github.com/schaefersoft/laravel-swiss-eid/commit/9bbd18594f6b3afb4af2c0ed3a51ad588d7bc3f9))
+* **tests:** code coverage, env usage and config call ([41092d1](https://github.com/schaefersoft/laravel-swiss-eid/commit/41092d1750191937f7ba14fd21397747f5d43616))
+* **tests:** fix label tests to localized labels ([36ff404](https://github.com/schaefersoft/laravel-swiss-eid/commit/36ff4044b4e48791b65ea2aa5244c3683d18bc83))
+
+
+### Miscellaneous Chores
+
+* pint ([34cd8da](https://github.com/schaefersoft/laravel-swiss-eid/commit/34cd8da14049dc0b72c3fa7b77185011547d50ce))
+
 ## [0.3.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.2.3...v0.3.0) (2026-04-30)
 
 
