@@ -4,67 +4,80 @@ declare(strict_types=1);
 
 use SwissEid\LaravelSwissEid\PresentationBuilder;
 
-it('builds a valid presentation definition with vct constraint', function (): void {
+it('builds a DCQL query with the vct in meta.vct_values', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $result = $builder->build();
 
     expect($result)
-        ->toHaveKey('presentation_definition')
+        ->toHaveKey('dcql_query')
         ->toHaveKey('response_mode', 'direct_post');
 
-    $def = $result['presentation_definition'];
-    expect($def)->toHaveKey('id')->toHaveKey('input_descriptors');
+    $credential = $result['dcql_query']['credentials'][0];
 
-    $descriptor = $def['input_descriptors'][0];
-    expect($descriptor['constraints']['fields'][0])
-        ->toBe([
-            'path' => ['$.vct'],
-            'filter' => ['type' => 'string', 'const' => 'test-sdjwt'],
-        ]);
+    expect($credential['id'])->toBe('swiss_eid');
+    expect($credential['format'])->toBe('dc+sd-jwt');
+    expect($credential['meta']['vct_values'])->toBe(['test-sdjwt']);
 });
 
-it('adds age_over_18 field', function (): void {
+it('adds age_over_18 as a DCQL claim path', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addAgeOver18();
     $result = $builder->build();
 
-    $fields = $result['presentation_definition']['input_descriptors'][0]['constraints']['fields'];
+    $claims = $result['dcql_query']['credentials'][0]['claims'];
+    $paths = array_column($claims, 'path');
 
-    $paths = array_column($fields, 'path');
-    expect($paths)->toContain(['$.age_over_18']);
+    expect($paths)->toContain(['age_over_18']);
 });
 
-it('adds age_over_16 field', function (): void {
+it('adds age_over_16 as a DCQL claim path', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addAgeOver16();
     $result = $builder->build();
 
-    $fields = $result['presentation_definition']['input_descriptors'][0]['constraints']['fields'];
-    $paths = array_column($fields, 'path');
+    $claims = $result['dcql_query']['credentials'][0]['claims'];
+    $paths = array_column($claims, 'path');
 
-    expect($paths)->toContain(['$.age_over_16']);
+    expect($paths)->toContain(['age_over_16']);
 });
 
-it('adds arbitrary fields via addField()', function (): void {
+it('normalises legacy JSONPath and bare-name fields to DCQL path segments', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
-    $builder->addField('$.given_name')->addField('$.family_name');
+    $builder->addField('$.given_name')->addField('family_name');
     $result = $builder->build();
 
-    $fields = $result['presentation_definition']['input_descriptors'][0]['constraints']['fields'];
-    $paths = array_column($fields, 'path');
+    $claims = $result['dcql_query']['credentials'][0]['claims'];
+    $paths = array_column($claims, 'path');
 
-    expect($paths)->toContain(['$.given_name'])->toContain(['$.family_name']);
+    expect($paths)->toContain(['given_name'])->toContain(['family_name']);
 });
 
-it('does not duplicate fields', function (): void {
+it('splits dotted paths into nested DCQL segments', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
-    $builder->addField('$.given_name')->addField('$.given_name');
+    $builder->addField('address.street_address');
     $result = $builder->build();
 
-    $fields = $result['presentation_definition']['input_descriptors'][0]['constraints']['fields'];
-    $names = array_map(fn ($f) => $f['path'][0] ?? '', $fields);
+    $claims = $result['dcql_query']['credentials'][0]['claims'];
+    $paths = array_column($claims, 'path');
 
-    expect(array_count_values($names)['$.given_name'])->toBe(1);
+    expect($paths)->toContain(['address', 'street_address']);
+});
+
+it('does not duplicate claims regardless of input notation', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $builder->addField('$.given_name')->addField('given_name');
+    $result = $builder->build();
+
+    $claims = $result['dcql_query']['credentials'][0]['claims'];
+
+    expect($claims)->toHaveCount(1);
+});
+
+it('omits the claims key when no fields are requested', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $result = $builder->build();
+
+    expect($result['dcql_query']['credentials'][0])->not->toHaveKey('claims');
 });
 
 it('sets accepted issuer dids', function (): void {
@@ -74,15 +87,6 @@ it('sets accepted issuer dids', function (): void {
     $result = $builder->build();
 
     expect($result['accepted_issuer_dids'])->toBe($dids);
-});
-
-it('uses ES256 algorithms by default', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
-    $result = $builder->build();
-
-    $format = $result['presentation_definition']['input_descriptors'][0]['format']['vc+sd-jwt'];
-    expect($format['sd-jwt_alg_values'])->toBe(['ES256']);
-    expect($format['kb-jwt_alg_values'])->toBe(['ES256']);
 });
 
 it('uses direct_post response mode by default', function (): void {
@@ -105,13 +109,4 @@ it('accepts response mode via constructor', function (): void {
     $result = $builder->build();
 
     expect($result['response_mode'])->toBe('direct_post.jwt');
-});
-
-it('generates unique UUIDs for each build()', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
-    $first = $builder->build();
-    $second = $builder->build();
-
-    expect($first['presentation_definition']['id'])
-        ->not()->toBe($second['presentation_definition']['id']);
 });

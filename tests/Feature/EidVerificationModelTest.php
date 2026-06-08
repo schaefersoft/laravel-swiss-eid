@@ -14,7 +14,7 @@ it('creates a model with uuid primary key', function (): void {
         'verifier_id' => 'v-001',
         'state' => VerificationState::Pending,
         'credential_type' => 'test-sdjwt',
-        'requested_fields' => ['$.age_over_18'],
+        'requested_fields' => [['path' => ['age_over_18']]],
         'expires_at' => Carbon::now()->addMinutes(5),
     ]);
 

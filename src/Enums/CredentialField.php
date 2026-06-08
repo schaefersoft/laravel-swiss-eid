@@ -16,7 +16,19 @@ enum CredentialField: string
     case Gender = 'gender';
 
     /**
-     * Return the JSON path used in a presentation definition (e.g. '$.age_over_18').
+     * Return the DCQL claim path for this field (e.g. ['age_over_18']).
+     *
+     * @return list<string>
+     */
+    public function path(): array
+    {
+        return [$this->value];
+    }
+
+    /**
+     * Return the legacy DIF Presentation Exchange JSON path (e.g. '$.age_over_18').
+     *
+     * @deprecated The swiyu Verifier 3.0.0 uses DCQL; use {@see path()} instead.
      */
     public function jsonPath(): string
     {

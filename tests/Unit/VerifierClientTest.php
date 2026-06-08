@@ -37,7 +37,7 @@ it('sends a POST to create a verification', function (): void {
     ]);
 
     $client = makeClient();
-    $result = $client->createVerification(['presentation_definition' => []]);
+    $result = $client->createVerification(['dcql_query' => []]);
 
     expect($result['id'])->toBe('verifier-uuid');
 
@@ -100,7 +100,7 @@ it('fetches an OAuth2 token and attaches it to verifier requests', function (): 
         ],
     ]);
 
-    $client->createVerification(['presentation_definition' => []]);
+    $client->createVerification(['dcql_query' => []]);
 
     Http::assertSent(fn (Request $req) => $req->url() === 'http://auth.example/token'
         && $req->method() === 'POST');

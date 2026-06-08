@@ -4,43 +4,53 @@ declare(strict_types=1);
 
 namespace SwissEid\LaravelSwissEid;
 
-use Illuminate\Support\Str;
-
 /**
- * Builds a DIF Presentation Exchange v2.1 presentation_definition
- * in the format expected by the swiyu verifier.
+ * Builds a DCQL (Digital Credentials Query Language) query for the swiyu
+ * verifier as specified by OpenID4VP 1.0.
+ *
+ * This replaces the legacy DIF Presentation Exchange `presentation_definition`,
+ * which the swiyu Generic Verifier removed in 3.0.0 (DCQL is now enforced).
  */
 class PresentationBuilder
 {
+    /** DCQL credential identifier; must match ^[a-zA-Z0-9_-]+$. */
+    private const CREDENTIAL_ID = 'swiss_eid';
+
+    /** SD-JWT VC credential format (OID4VP 1.0 / SD-JWT VC draft >= 06). */
+    private const FORMAT = 'dc+sd-jwt';
+
     private string $credentialType;
 
-    /** @var list<string> */
+    /**
+     * Requested claims as DCQL path-segment arrays, e.g. ['given_name'] or
+     * ['address', 'street_address'].
+     *
+     * @var list<list<string>>
+     */
     private array $fields = [];
 
     /** @var list<string> */
     private array $acceptedIssuers = [];
 
-    private string $sdJwtAlg = 'ES256';
+    private string $responseMode;
 
-    private string $kbJwtAlg = 'ES256';
-
-    private string $responseMode = 'direct_post';
-
-    public function __construct(string $credentialType, string $sdJwtAlg = 'ES256', string $kbJwtAlg = 'ES256', string $responseMode = 'direct_post')
+    public function __construct(string $credentialType, string $responseMode = 'direct_post')
     {
         $this->credentialType = $credentialType;
-        $this->sdJwtAlg = $sdJwtAlg;
-        $this->kbJwtAlg = $kbJwtAlg;
         $this->responseMode = $responseMode;
     }
 
     /**
-     * Add a JSON path field to the presentation request (e.g. '$.given_name').
+     * Add a claim to the query. Accepts a bare claim name ('given_name'), a
+     * legacy JSONPath ('$.given_name') or a dotted path ('address.street'),
+     * all normalised to a DCQL path-segment array.
      */
-    public function addField(string $jsonPath): self
+    public function addField(string $path): self
     {
-        if (! in_array($jsonPath, $this->fields, true)) {
-            $this->fields[] = $jsonPath;
+        $segments = $this->normalisePath($path);
+
+        if ($segments !== [] && ! in_array($segments, $this->fields, true)) {
+            $this->fields[] = $segments;
         }
 
         return $this;
@@ -79,19 +89,19 @@ class PresentationBuilder
     }
 
     /**
-     * Convenience: add the age_over_18 field.
+     * Convenience: add the age_over_18 claim.
      */
     public function addAgeOver18(): self
     {
-        return $this->addField('$.age_over_18');
+        return $this->addField('age_over_18');
     }
 
     /**
-     * Convenience: add the age_over_16 field.
+     * Convenience: add the age_over_16 claim.
      */
     public function addAgeOver16(): self
     {
-        return $this->addField('$.age_over_16');
+        return $this->addField('age_over_16');
     }
 
     /**
@@ -101,40 +111,45 @@ class PresentationBuilder
      */
     public function build(): array
     {
-        $constraintFields = [
-            [
-                'path' => ['$.vct'],
-                'filter' => [
-                    'type' => 'string',
-                    'const' => $this->credentialType,
-                ],
+        $credential = [
+            'id' => self::CREDENTIAL_ID,
+            'format' => self::FORMAT,
+            'meta' => [
+                'vct_values' => [$this->credentialType],
             ],
         ];
 
-        foreach ($this->fields as $path) {
-            $constraintFields[] = ['path' => [$path]];
+        // DCQL: omitting `claims` requests the whole credential; only add the
+        // key when specific claims were requested.
+        if ($this->fields !== []) {
+            $credential['claims'] = array_map(
+                static fn (array $segments): array => ['path' => $segments],
+                $this->fields,
+            );
         }
 
         return [
             'accepted_issuer_dids' => $this->acceptedIssuers,
             'response_mode' => $this->responseMode,
-            'presentation_definition' => [
-                'id' => Str::uuid()->toString(),
-                'input_descriptors' => [
-                    [
-                        'id' => Str::uuid()->toString(),
-                        'format' => [
-                            'vc+sd-jwt' => [
-                                'sd-jwt_alg_values' => [$this->sdJwtAlg],
-                                'kb-jwt_alg_values' => [$this->kbJwtAlg],
-                            ],
-                        ],
-                        'constraints' => [
-                            'fields' => $constraintFields,
-                        ],
-                    ],
-                ],
+            'dcql_query' => [
+                'credentials' => [$credential],
             ],
         ];
+    }
+
+    /**
+     * Normalise a claim reference to a DCQL path-segment array.
+     *
+     * @return list<string>
+     */
+    private function normalisePath(string $path): array
+    {
+        // Strip a leading JSONPath root ('$.foo' / '$foo'), then split on dots.
+        $normalised = ltrim($path, '$.');
+
+        return array_values(array_filter(
+            explode('.', $normalised),
+            static fn (string $segment): bool => $segment !== '',
+        ));
     }
 }

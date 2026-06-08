@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/packagist/l/schaefersoft/laravel-swiss-eid.svg)](LICENSE)
 
 Laravel package for integrating the Swiss eID (**swiyu**) verification flow: builds
-the OpenID4VP / DIF Presentation Exchange request, talks to a swiyu Verifier,
+the OpenID4VP 1.0 DCQL request, talks to a swiyu Verifier,
 persists the verification, handles the webhook callback and emits events. UI is
 intentionally left to you — the package only exposes data primitives (QR code
 SVG, deeplink, JSON status endpoint) so you can render in Blade, Livewire,
@@ -572,7 +572,7 @@ The package ships a single table (default name `eid_verifications`) with:
 | `user_id` | nullable | Your user reference. Column type depends on `SWISS_EID_USER_ID_TYPE` (`int` default, `uuid`, or `string`). |
 | `state` | enum | `pending`, `success`, `failed`, `expired`. |
 | `credential_type` | string | Mirrors `SWISS_EID_CREDENTIAL_TYPE`. |
-| `requested_fields` | json | The presentation-definition fields you requested. |
+| `requested_fields` | json | The DCQL claims you requested. |
 | `credential_data` | encrypted json | Decrypted automatically by the cast. |
 | `metadata` | json, nullable | Anything you passed via `->metadata([...])`. |
 | `deeplink`, `verification_url` | string | Cached from the verifier response. |
