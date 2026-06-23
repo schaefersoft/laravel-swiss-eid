@@ -601,6 +601,7 @@ single-line change.
 | `swiss-eid:install` | Publish config + migration, print required `.env` variables, optionally run migrations. |
 | `swiss-eid:test-connection` | Probe the verifier to confirm it is reachable and responding. |
 | `swiss-eid:cleanup --days=7` | Delete expired records older than N days. Accepts `--dry-run`. |
+| `swiss-eid:expire` | Mark pending verifications past their TTL as expired and dispatch `VerificationExpired`. Schedule it so the event fires without relying on status polling. |
 | `swiss-eid:doctor` | Validate the full configuration, check DID formats, and probe the webhook URL. |
 
 Schedule the cleanup in `App\Console\Kernel` (or `routes/console.php` on
