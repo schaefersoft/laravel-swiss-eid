@@ -91,3 +91,31 @@ it('serialises to array', function (): void {
     expect($arr['state'])->toBe('success');
     expect($arr['is_successful'])->toBeTrue();
 });
+
+it('exposes the verifier error code and detects user rejection', function (): void {
+    $model = new EidVerification([
+        'id' => 'test-uuid',
+        'verifier_id' => 'verifier-uuid',
+        'state' => VerificationState::Failed,
+        'credential_type' => 'test-sdjwt',
+        'requested_fields' => [],
+        'expires_at' => Carbon::now()->addMinutes(5),
+    ]);
+
+    $result = new VerificationResult(
+        id: 'test-uuid',
+        state: VerificationState::Failed,
+        credentialData: null,
+        model: $model,
+        errorCode: 'client_rejected',
+        errorDescription: 'The holder rejected the verification request.',
+    );
+
+    expect($result->errorCode)->toBe('client_rejected')
+        ->and($result->wasRejectedByUser())->toBeTrue()
+        ->and($result->toArray()['error_code'])->toBe('client_rejected');
+});
+
+it('reports wasRejectedByUser() as false for technical failures', function (): void {
+    expect(makeResult(VerificationState::Failed)->wasRejectedByUser())->toBeFalse();
+});

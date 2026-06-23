@@ -19,6 +19,8 @@ use SwissEid\LaravelSwissEid\Enums\VerificationState;
  * @property string $credential_type
  * @property array<string, mixed> $requested_fields
  * @property array<string, mixed>|null $credential_data
+ * @property string|null $error_code
+ * @property string|null $error_description
  * @property array<string, mixed>|null $metadata
  * @property string|null $deeplink
  * @property string|null $verification_url
@@ -51,6 +53,8 @@ class EidVerification extends Model
         'credential_type',
         'requested_fields',
         'credential_data',
+        'error_code',
+        'error_description',
         'metadata',
         'deeplink',
         'verification_url',
@@ -150,6 +154,8 @@ class EidVerification extends Model
             state: $this->state,
             credentialData: $this->credential_data,
             model: $this,
+            errorCode: $this->error_code,
+            errorDescription: $this->error_description,
         );
     }
 }

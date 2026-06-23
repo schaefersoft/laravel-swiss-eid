@@ -56,10 +56,14 @@ class WebhookController extends Controller
         $rawState = strtoupper((string) ($result['state'] ?? ''));
         $newState = $rawState === 'SUCCESS' ? VerificationState::Success : VerificationState::Failed;
         $credentialData = $result['wallet_response']['credential_subject_data'] ?? null;
+        $errorCode = $result['wallet_response']['error_code'] ?? null;
+        $errorDescription = $result['wallet_response']['error_description'] ?? null;
 
         $verification->update([
             'state' => $newState,
             'credential_data' => $credentialData,
+            'error_code' => $errorCode,
+            'error_description' => $errorDescription,
             'webhook_received_at' => now(),
         ]);
 

@@ -21,6 +21,10 @@ class VerificationResult
         public readonly ?array $credentialData,
         /** The underlying Eloquent model. */
         public readonly EidVerification $model,
+        /** Verifier error code when the verification failed (e.g. "client_rejected"). */
+        public readonly ?string $errorCode = null,
+        /** Human-readable error description from the verifier, if any. */
+        public readonly ?string $errorDescription = null,
     ) {}
 
     /**
@@ -77,6 +81,15 @@ class VerificationResult
     }
 
     /**
+     * Whether the holder actively rejected/cancelled the request, as opposed to
+     * a technical verification failure (verifier error_code "client_rejected").
+     */
+    public function wasRejectedByUser(): bool
+    {
+        return $this->errorCode === 'client_rejected';
+    }
+
+    /**
      * Return all result data as a plain array.
      *
      * @return array<string, mixed>
@@ -88,6 +101,8 @@ class VerificationResult
             'state' => $this->state->value,
             'is_successful' => $this->isSuccessful(),
             'credential_data' => $this->credentialData,
+            'error_code' => $this->errorCode,
+            'error_description' => $this->errorDescription,
         ];
     }
 }

@@ -92,6 +92,35 @@ it('processes a failed webhook', function (): void {
     Event::assertDispatched(VerificationFailed::class);
 });
 
+it('persists the error code and description from a failed verification', function (): void {
+    Event::fake([VerificationFailed::class]);
+
+    $verification = createVerificationRecord('verifier-rejected-01');
+
+    Http::fake([
+        'localhost:8083/management/api/verifications/verifier-rejected-01' => Http::response([
+            'state' => 'FAILED',
+            'wallet_response' => [
+                'error_code' => 'client_rejected',
+                'error_description' => 'The holder rejected the verification request.',
+            ],
+        ], 200),
+    ]);
+
+    $this->postJson('/swiss-eid/webhook', [
+        'verification_id' => 'verifier-rejected-01',
+    ], ['X-Verifier-Api-Key' => 'test-secret'])->assertOk();
+
+    $verification->refresh();
+    expect($verification->state)->toBe(VerificationState::Failed)
+        ->and($verification->error_code)->toBe('client_rejected')
+        ->and($verification->error_description)->toBe('The holder rejected the verification request.');
+
+    expect($verification->toResult()->wasRejectedByUser())->toBeTrue();
+
+    Event::assertDispatched(VerificationFailed::class);
+});
+
 it('acknowledges webhooks for unknown verification ids with 200 to stop retries', function (): void {
     Http::fake([
         '*' => Http::response(['state' => 'SUCCESS'], 200),
