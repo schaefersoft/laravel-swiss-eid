@@ -29,7 +29,6 @@ class DoctorCommand extends Command
         $this->runSection('Credentials', fn () => $this->checkCredentialConfig());
         $this->runSection('OAuth2 Auth', fn () => $this->checkAuthConfig());
         $this->runSection('General', fn () => $this->checkGeneralConfig());
-        $this->runSection('Private Key (JWT response mode)', fn () => $this->checkPemKey());
         $this->runSection('DID Formats (accepted_issuers)', fn () => $this->checkDidFormats());
         $this->runSection('Webhook Reachability', fn () => $this->checkWebhookReachability());
 
@@ -162,55 +161,6 @@ class DoctorCommand extends Command
             $this->checkFail('SWISS_EID_USER_ID_TYPE must be one of ['.implode(', ', $validTypes)."], got: {$userIdType}");
         } else {
             $this->checkOk("User ID column type: {$userIdType}");
-        }
-    }
-
-    private function checkPemKey(): void
-    {
-        $mode = config('swiss-eid.verifier.response_mode');
-        $pem = (string) config('swiss-eid.verifier.private_key', '');
-
-        if (empty($pem)) {
-            if ($mode === 'direct_post.jwt') {
-                $this->checkFail('SWISS_EID_PRIVATE_KEY is not set, but response_mode is direct_post.jwt — wallet response decryption will fail');
-            } else {
-                $this->checkOk('No private key configured (not required for direct_post mode)');
-            }
-
-            return;
-        }
-
-        // Allow escaped newlines from .env files
-        $pem = str_replace('\\n', "\n", $pem);
-
-        $key = @openssl_pkey_get_private($pem);
-
-        if ($key === false) {
-            $this->checkFail('SWISS_EID_PRIVATE_KEY could not be parsed as a valid PEM private key: '.openssl_error_string());
-
-            return;
-        }
-
-        /** @var array{type: int, bits: int, ec?: array{curve_name: string}} $details */
-        $details = openssl_pkey_get_details($key);
-        $type = match ($details['type']) {
-            OPENSSL_KEYTYPE_EC => 'EC',
-            OPENSSL_KEYTYPE_RSA => 'RSA',
-            default => 'Unknown',
-        };
-
-        if ($type === 'EC') {
-            $curve = $details['ec']['curve_name'] ?? 'unknown';
-            // OpenSSL names P-256 as "prime256v1"
-            if ($curve !== 'prime256v1') {
-                $this->checkWarn("Private key uses curve '{$curve}' — Swiss eID expects P-256 (prime256v1) for ES256");
-            } else {
-                $this->checkOk("EC private key valid — curve: P-256 (prime256v1), bits: {$details['bits']}");
-            }
-        } elseif ($type === 'RSA') {
-            $this->checkWarn("Private key is RSA ({$details['bits']} bits) — Swiss eID uses ES256 (EC P-256)");
-        } else {
-            $this->checkWarn("Private key type '{$type}' is unexpected — Swiss eID uses EC P-256");
         }
     }
 

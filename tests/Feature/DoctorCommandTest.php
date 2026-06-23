@@ -10,7 +10,6 @@ beforeEach(function (): void {
         'swiss-eid.verifier.base_url' => 'http://localhost:8083',
         'swiss-eid.verifier.timeout' => 10,
         'swiss-eid.verifier.response_mode' => 'direct_post',
-        'swiss-eid.verifier.private_key' => null,
         'swiss-eid.webhook.path' => '/swiss-eid/webhook',
         'swiss-eid.webhook.api_key_header' => 'X-Verifier-Api-Key',
         'swiss-eid.webhook.api_key' => str_repeat('a', 32),
@@ -136,27 +135,6 @@ it('fails when user_id_type is invalid', function (): void {
 
     $this->artisan('swiss-eid:doctor')
         ->expectsOutputToContain('SWISS_EID_USER_ID_TYPE must be one of')
-        ->assertExitCode(1);
-});
-
-// ── Private key ───────────────────────────────────────────────────────────────
-
-it('fails when response mode is direct_post.jwt but no private key is set', function (): void {
-    config([
-        'swiss-eid.verifier.response_mode' => 'direct_post.jwt',
-        'swiss-eid.verifier.private_key' => null,
-    ]);
-
-    $this->artisan('swiss-eid:doctor')
-        ->expectsOutputToContain('SWISS_EID_PRIVATE_KEY is not set')
-        ->assertExitCode(1);
-});
-
-it('fails when private key is set but cannot be parsed', function (): void {
-    config(['swiss-eid.verifier.private_key' => 'not-a-valid-pem-key']);
-
-    $this->artisan('swiss-eid:doctor')
-        ->expectsOutputToContain('could not be parsed as a valid PEM private key')
         ->assertExitCode(1);
 });
 
