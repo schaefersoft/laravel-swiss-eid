@@ -87,9 +87,9 @@ class SwissEidManager
      */
     public function field(string $path): static
     {
-        // Allow passing bare field names like 'given_name' as well as full paths
-        $jsonPath = str_starts_with($path, '$') ? $path : '$.'.$path;
-        $this->builder->addField($jsonPath);
+        // PresentationBuilder normalises bare names ('given_name'), legacy
+        // JSONPaths ('$.given_name') and dotted paths ('address.street').
+        $this->builder->addField($path);
 
         return $this;
     }
@@ -180,7 +180,7 @@ class SwissEidManager
             'user_id' => $this->userId,
             'state' => VerificationState::Pending,
             'credential_type' => $this->config['credentials']['type'],
-            'requested_fields' => $payload['presentation_definition']['input_descriptors'][0]['constraints']['fields'] ?? [],
+            'requested_fields' => $payload['dcql_query']['credentials'][0]['claims'] ?? [],
             'metadata' => $this->metadata ?: null,
             'deeplink' => $response['verification_deeplink'] ?? $response['deeplink'] ?? $response['verification_url'] ?? $response['verificationUrl'] ?? '',
             'verification_url' => $response['verification_url'] ?? $response['verificationUrl'] ?? $response['verification_deeplink'] ?? $response['deeplink'] ?? '',
@@ -224,8 +224,6 @@ class SwissEidManager
     {
         $builder = new PresentationBuilder(
             credentialType: (string) ($this->config['credentials']['type'] ?? ''),
-            sdJwtAlg: (string) ($this->config['credentials']['sd_jwt_alg'] ?? 'ES256'),
-            kbJwtAlg: (string) ($this->config['credentials']['kb_jwt_alg'] ?? 'ES256'),
             responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post'),
         );
 

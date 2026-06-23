@@ -20,3 +20,17 @@ it('returns a base64 data URI prefixed with the SVG mime type', function (): voi
     expect($payload)->not->toBeFalse()
         ->and($payload)->toContain('<svg');
 });
+
+it('defaults the SVG dimensions to 300 pixels', function (): void {
+    $svg = (new QrCodeGenerator)->svg('openid-vc://example');
+
+    expect($svg)->toContain('width="300"')
+        ->and($svg)->toContain('height="300"');
+});
+
+it('applies the requested pixel size to the SVG dimensions', function (): void {
+    $svg = (new QrCodeGenerator)->svg('openid-vc://example', 150);
+
+    expect($svg)->toContain('width="150"')
+        ->and($svg)->toContain('height="150"');
+});

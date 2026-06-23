@@ -7,6 +7,7 @@ namespace SwissEid\LaravelSwissEid;
 use Illuminate\Support\ServiceProvider;
 use SwissEid\LaravelSwissEid\Commands\CleanupCommand;
 use SwissEid\LaravelSwissEid\Commands\DoctorCommand;
+use SwissEid\LaravelSwissEid\Commands\ExpireVerificationsCommand;
 use SwissEid\LaravelSwissEid\Commands\InstallCommand;
 use SwissEid\LaravelSwissEid\Commands\TestConnectionCommand;
 
@@ -56,6 +57,7 @@ class SwissEidServiceProvider extends ServiceProvider
                 InstallCommand::class,
                 TestConnectionCommand::class,
                 CleanupCommand::class,
+                ExpireVerificationsCommand::class,
                 DoctorCommand::class,
             ]);
         }

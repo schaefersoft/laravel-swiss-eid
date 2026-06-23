@@ -23,7 +23,16 @@ class QrCodeGenerator
             'imageBase64' => false,
         ]);
 
-        return (new QRCode($options))->render($data);
+        $svg = (string) (new QRCode($options))->render($data);
+
+        // chillerlan renders a viewBox-only <svg> with no intrinsic dimensions,
+        // so add explicit width/height to honour the requested $size in pixels.
+        return (string) preg_replace(
+            '/<svg\b/',
+            sprintf('<svg width="%d" height="%d"', $size, $size),
+            $svg,
+            1,
+        );
     }
 
     /**

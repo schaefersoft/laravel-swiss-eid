@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/packagist/l/schaefersoft/laravel-swiss-eid.svg)](LICENSE)
 
 Laravel package for integrating the Swiss eID (**swiyu**) verification flow: builds
-the OpenID4VP / DIF Presentation Exchange request, talks to a swiyu Verifier,
+the OpenID4VP 1.0 DCQL request, talks to a swiyu Verifier,
 persists the verification, handles the webhook callback and emits events. UI is
 intentionally left to you — the package only exposes data primitives (QR code
 SVG, deeplink, JSON status endpoint) so you can render in Blade, Livewire,
@@ -115,8 +115,8 @@ poll('{{ $pending->statusUrl() }}');
 php artisan swiss-eid:doctor
 ```
 
-Validates all ENV variables, parses the private key, checks DID formats, and
-probes webhook reachability — in one pass.
+Validates all ENV variables, checks DID formats, and probes webhook
+reachability — in one pass.
 
 ---
 
@@ -572,7 +572,7 @@ The package ships a single table (default name `eid_verifications`) with:
 | `user_id` | nullable | Your user reference. Column type depends on `SWISS_EID_USER_ID_TYPE` (`int` default, `uuid`, or `string`). |
 | `state` | enum | `pending`, `success`, `failed`, `expired`. |
 | `credential_type` | string | Mirrors `SWISS_EID_CREDENTIAL_TYPE`. |
-| `requested_fields` | json | The presentation-definition fields you requested. |
+| `requested_fields` | json | The DCQL claims you requested. |
 | `credential_data` | encrypted json | Decrypted automatically by the cast. |
 | `metadata` | json, nullable | Anything you passed via `->metadata([...])`. |
 | `deeplink`, `verification_url` | string | Cached from the verifier response. |
@@ -601,7 +601,8 @@ single-line change.
 | `swiss-eid:install` | Publish config + migration, print required `.env` variables, optionally run migrations. |
 | `swiss-eid:test-connection` | Probe the verifier to confirm it is reachable and responding. |
 | `swiss-eid:cleanup --days=7` | Delete expired records older than N days. Accepts `--dry-run`. |
-| `swiss-eid:doctor` | Validate the full configuration, parse the private key, check DID formats, and probe the webhook URL. |
+| `swiss-eid:expire` | Mark pending verifications past their TTL as expired and dispatch `VerificationExpired`. Schedule it so the event fires without relying on status polling. |
+| `swiss-eid:doctor` | Validate the full configuration, check DID formats, and probe the webhook URL. |
 
 Schedule the cleanup in `App\Console\Kernel` (or `routes/console.php` on
 Laravel 11+):
@@ -629,24 +630,8 @@ pipelines or as a post-deploy smoke test.
 | **Credentials** | `SWISS_EID_CREDENTIAL_TYPE` (vct) is set · at least one accepted issuer is configured |
 | **OAuth2 Auth** | Skipped when `SWISS_EID_AUTH_ENABLED=false`; otherwise validates token URL, client ID and secret |
 | **General** | `SWISS_EID_VERIFICATION_TTL` is a positive integer (warns if < 60 s) · `SWISS_EID_USER_ID_TYPE` is one of `int`, `uuid`, `string` |
-| **Private Key** | Reads `SWISS_EID_PRIVATE_KEY`, parses it with OpenSSL, confirms the key type is EC and the curve is P-256 (`prime256v1`); reports key type and bit count. Required when `response_mode=direct_post.jwt`. |
 | **DID Formats** | Each entry in `SWISS_EID_ACCEPTED_ISSUERS` matches `did:[method]:[id]` |
 | **Webhook Reachability** | POSTs to `APP_URL + webhook.path` without credentials: `401`/`403` → correctly protected; `404` → route not found; connection error → not publicly reachable |
-
-**Private key check**
-
-The doctor command reads the private key directly from the environment (not from
-the config file) so that the raw value can be passed to OpenSSL. Store it in
-`.env` using double-quoted multi-line syntax to preserve real newlines:
-
-```env
-SWISS_EID_PRIVATE_KEY="-----BEGIN EC PRIVATE KEY-----
-MHQCAQEEIBFv...
------END EC PRIVATE KEY-----"
-```
-
-Single-line values with escaped `\n` sequences also work — the command
-normalises them before parsing.
 
 **Exit codes**
 
@@ -671,9 +656,6 @@ Swiss eID Doctor — configuration diagnostics
     ! SWISS_EID_WEBHOOK_API_KEY is shorter than 32 characters — consider a stronger secret
 
   ...
-
-  Private Key (JWT response mode)
-    ✓ EC private key valid — curve: P-256 (prime256v1), bits: 256
 
   DID Formats (accepted_issuers)
     ✓ Valid DID (method: did:tdw:…) — did:tdw:QmPEZ…

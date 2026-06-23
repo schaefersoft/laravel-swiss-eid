@@ -142,6 +142,12 @@ class VerifierClient
             Cache::put(self::TOKEN_CACHE_KEY, $accessToken, $expiresIn - 30);
 
             return $accessToken;
+        } catch (RequestException $e) {
+            throw new SwissEidException(
+                'The OAuth2 token endpoint returned an error response: '.$e->getMessage(),
+                $e->response->status(),
+                $e,
+            );
         } catch (ConnectionException $e) {
             throw new VerifierConnectionException(
                 'Could not fetch OAuth2 access token: '.$e->getMessage(),

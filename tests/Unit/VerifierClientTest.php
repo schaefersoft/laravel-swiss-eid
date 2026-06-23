@@ -37,7 +37,7 @@ it('sends a POST to create a verification', function (): void {
     ]);
 
     $client = makeClient();
-    $result = $client->createVerification(['presentation_definition' => []]);
+    $result = $client->createVerification(['dcql_query' => []]);
 
     expect($result['id'])->toBe('verifier-uuid');
 
@@ -100,7 +100,7 @@ it('fetches an OAuth2 token and attaches it to verifier requests', function (): 
         ],
     ]);
 
-    $client->createVerification(['presentation_definition' => []]);
+    $client->createVerification(['dcql_query' => []]);
 
     Http::assertSent(fn (Request $req) => $req->url() === 'http://auth.example/token'
         && $req->method() === 'POST');
@@ -159,6 +159,25 @@ it('throws VerifierConnectionException when verifier is unreachable on get', fun
     $client = makeClient();
     $client->getVerification('any');
 })->throws(VerifierConnectionException::class);
+
+it('throws SwissEidException when the token endpoint returns an error response', function (): void {
+    Cache::flush();
+
+    Http::fake([
+        'auth.example/token' => Http::response(['error' => 'invalid_client'], 401),
+    ]);
+
+    $client = makeClient([
+        'auth' => [
+            'enabled' => true,
+            'token_url' => 'http://auth.example/token',
+            'client_id' => 'cid',
+            'client_secret' => 'csecret',
+        ],
+    ]);
+
+    $client->createVerification(['dcql_query' => []]);
+})->throws(SwissEidException::class);
 
 it('throws VerifierConnectionException when token endpoint is unreachable', function (): void {
     Cache::flush();

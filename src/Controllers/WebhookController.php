@@ -27,12 +27,28 @@ class WebhookController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        \Log::info('swiss-eid webhook payload', ['body' => $request->all(), 'raw' => $request->getContent()]);
+        \Log::debug('swiss-eid webhook payload', ['body' => $request->all()]);
 
         $verificationId = (string) $request->input('verification_id', '');
 
-        /** @var EidVerification $verification */
-        $verification = EidVerification::where('verifier_id', $verificationId)->firstOrFail();
+        $verification = EidVerification::where('verifier_id', $verificationId)->first();
+
+        // Unknown verification: acknowledge with 200 so the verifier stops
+        // retrying the callback — there is nothing for us to update.
+        if ($verification === null) {
+            \Log::warning('swiss-eid webhook for unknown verification_id', [
+                'verification_id' => $verificationId,
+            ]);
+
+            return response()->json(['status' => 'ignored']);
+        }
+
+        // Idempotency: the verifier delivers callbacks at-least-once and keeps
+        // retrying until it receives a 2xx response. Once we have reached a
+        // terminal state we acknowledge without re-processing or re-firing events.
+        if ($verification->state->isTerminal()) {
+            return response()->json(['status' => 'ok']);
+        }
 
         // Fetch the full result from the verifier
         $result = $this->client->getVerification($verificationId);
@@ -40,10 +56,14 @@ class WebhookController extends Controller
         $rawState = strtoupper((string) ($result['state'] ?? ''));
         $newState = $rawState === 'SUCCESS' ? VerificationState::Success : VerificationState::Failed;
         $credentialData = $result['wallet_response']['credential_subject_data'] ?? null;
+        $errorCode = $result['wallet_response']['error_code'] ?? null;
+        $errorDescription = $result['wallet_response']['error_description'] ?? null;
 
         $verification->update([
             'state' => $newState,
             'credential_data' => $credentialData,
+            'error_code' => $errorCode,
+            'error_description' => $errorDescription,
             'webhook_received_at' => now(),
         ]);
 

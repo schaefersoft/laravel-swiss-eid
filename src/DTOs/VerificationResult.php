@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SwissEid\LaravelSwissEid\DTOs;
 
+use Illuminate\Support\Arr;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 
@@ -20,6 +21,10 @@ class VerificationResult
         public readonly ?array $credentialData,
         /** The underlying Eloquent model. */
         public readonly EidVerification $model,
+        /** Verifier error code when the verification failed (e.g. "client_rejected"). */
+        public readonly ?string $errorCode = null,
+        /** Human-readable error description from the verifier, if any. */
+        public readonly ?string $errorDescription = null,
     ) {}
 
     /**
@@ -48,19 +53,22 @@ class VerificationResult
     }
 
     /**
-     * Retrieve a field from the credential data.
+     * Retrieve a field from the credential data. Supports "dot" notation for
+     * nested claims (e.g. 'address.street_address').
      */
     public function get(string $field, mixed $default = null): mixed
     {
-        return $this->credentialData[$field] ?? $default;
+        return data_get($this->credentialData, $field, $default);
     }
 
     /**
-     * Check whether a field exists in the credential data.
+     * Check whether a field exists in the credential data. Supports "dot"
+     * notation for nested claims (e.g. 'address.street_address').
      */
     public function has(string $field): bool
     {
-        return isset($this->credentialData[$field]);
+        return $this->credentialData !== null
+            && Arr::has($this->credentialData, $field);
     }
 
     /**
@@ -70,6 +78,15 @@ class VerificationResult
     {
         return $this->get('age_over_18') === true
             || $this->get('age_over_18') === 'true';
+    }
+
+    /**
+     * Whether the holder actively rejected/cancelled the request, as opposed to
+     * a technical verification failure (verifier error_code "client_rejected").
+     */
+    public function wasRejectedByUser(): bool
+    {
+        return $this->errorCode === 'client_rejected';
     }
 
     /**
@@ -84,6 +101,8 @@ class VerificationResult
             'state' => $this->state->value,
             'is_successful' => $this->isSuccessful(),
             'credential_data' => $this->credentialData,
+            'error_code' => $this->errorCode,
+            'error_description' => $this->errorDescription,
         ];
     }
 }
