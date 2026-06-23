@@ -57,6 +57,17 @@ it('checks has() correctly', function (): void {
     expect($result->has('family_name'))->toBeFalse();
 });
 
+it('retrieves nested credential data via dot-notation', function (): void {
+    $result = makeResult(VerificationState::Success, [
+        'address' => ['street_address' => 'Bahnhofstrasse 1', 'locality' => 'Zürich'],
+    ]);
+
+    expect($result->get('address.street_address'))->toBe('Bahnhofstrasse 1')
+        ->and($result->get('address.country', 'CH'))->toBe('CH')
+        ->and($result->has('address.locality'))->toBeTrue()
+        ->and($result->has('address.country'))->toBeFalse();
+});
+
 it('checks isAdult() with boolean true', function (): void {
     $result = makeResult(VerificationState::Success, ['age_over_18' => true]);
     expect($result->isAdult())->toBeTrue();

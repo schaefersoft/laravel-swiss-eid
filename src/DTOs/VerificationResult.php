@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SwissEid\LaravelSwissEid\DTOs;
 
+use Illuminate\Support\Arr;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 
@@ -48,19 +49,22 @@ class VerificationResult
     }
 
     /**
-     * Retrieve a field from the credential data.
+     * Retrieve a field from the credential data. Supports "dot" notation for
+     * nested claims (e.g. 'address.street_address').
      */
     public function get(string $field, mixed $default = null): mixed
     {
-        return $this->credentialData[$field] ?? $default;
+        return data_get($this->credentialData, $field, $default);
     }
 
     /**
-     * Check whether a field exists in the credential data.
+     * Check whether a field exists in the credential data. Supports "dot"
+     * notation for nested claims (e.g. 'address.street_address').
      */
     public function has(string $field): bool
     {
-        return isset($this->credentialData[$field]);
+        return $this->credentialData !== null
+            && Arr::has($this->credentialData, $field);
     }
 
     /**
