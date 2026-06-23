@@ -13,7 +13,7 @@ class CleanupCommand extends Command
                             {--days=7 : Delete records older than this many days}
                             {--dry-run : Show how many records would be deleted without deleting them}';
 
-    protected $description = 'Delete expired eID verification records older than a given number of days';
+    protected $description = 'Delete eID verification records whose TTL elapsed more than a given number of days ago (regardless of outcome)';
 
     public function handle(): int
     {
@@ -22,7 +22,9 @@ class CleanupCommand extends Command
 
         $cutoff = now()->subDays($days);
 
-        $query = EidVerification::expired()
+        // The cutoff (now − days) already implies the record's TTL has elapsed,
+        // so a separate expired() filter would be redundant.
+        $query = EidVerification::query()
             ->where('expires_at', '<', $cutoff);
 
         $count = $query->count();
