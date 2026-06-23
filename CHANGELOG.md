@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.4.0...v0.4.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* correct Beta-ID claim names for birth place and sex ([3627d74](https://github.com/schaefersoft/laravel-swiss-eid/commit/3627d74b825a32b9e5af30ed3728492fd099dc0a))
+* dispatch VerificationExpired from a schedulable swiss-eid:expire command ([e6a39a8](https://github.com/schaefersoft/laravel-swiss-eid/commit/e6a39a883f173f1c365a4d2626234965ab8716c5))
+* honor the size argument in QrCodeGenerator SVG output ([ecb86e9](https://github.com/schaefersoft/laravel-swiss-eid/commit/ecb86e94042bb6a4c651d4f0631e8c700adc3810))
+* make webhook idempotent and acknowledge unknown verification ids ([6bfe25a](https://github.com/schaefersoft/laravel-swiss-eid/commit/6bfe25ae4585c1554a8a7eb4c88a32796cc9f047))
+* persist verifier error_code and error_description on verifications ([55e2bd6](https://github.com/schaefersoft/laravel-swiss-eid/commit/55e2bd66bbe64a14ca09674a5fa53bc27e647c78))
+* support dot-notation in VerificationResult get and has ([4c04fe9](https://github.com/schaefersoft/laravel-swiss-eid/commit/4c04fe902a8c39eafdb209c27a73a2394db0ec9f))
+* wrap OAuth2 token endpoint errors in VerifierClient ([3da9b7a](https://github.com/schaefersoft/laravel-swiss-eid/commit/3da9b7ae358adfa72a8e01a59c3c81f379841264))
+
+
+### Miscellaneous Chores
+
+* log webhook payload at debug level instead of info ([4856c51](https://github.com/schaefersoft/laravel-swiss-eid/commit/4856c51bdb0797f7756114464a122c323c9e1216))
+
 ## [0.4.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.3.0...v0.4.0) (2026-05-11)
 
 
