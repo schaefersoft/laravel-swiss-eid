@@ -13,8 +13,8 @@ it('returns the DCQL claim path for each field', function (CredentialField $fiel
     [CredentialField::FamilyName,   ['family_name']],
     [CredentialField::DateOfBirth,  ['birth_date']],
     [CredentialField::Nationality,  ['nationality']],
-    [CredentialField::PlaceOfBirth, ['place_of_birth']],
-    [CredentialField::Gender,       ['gender']],
+    [CredentialField::PlaceOfBirth, ['birth_place']],
+    [CredentialField::Gender,       ['sex']],
 ]);
 
 it('still exposes the legacy JSON path for backwards compatibility', function (): void {

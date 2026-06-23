@@ -12,8 +12,8 @@ enum CredentialField: string
     case FamilyName = 'family_name';
     case DateOfBirth = 'birth_date';
     case Nationality = 'nationality';
-    case PlaceOfBirth = 'place_of_birth';
-    case Gender = 'gender';
+    case PlaceOfBirth = 'birth_place';
+    case Gender = 'sex';
 
     /**
      * Return the DCQL claim path for this field (e.g. ['age_over_18']).
