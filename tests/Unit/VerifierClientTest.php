@@ -160,6 +160,25 @@ it('throws VerifierConnectionException when verifier is unreachable on get', fun
     $client->getVerification('any');
 })->throws(VerifierConnectionException::class);
 
+it('throws SwissEidException when the token endpoint returns an error response', function (): void {
+    Cache::flush();
+
+    Http::fake([
+        'auth.example/token' => Http::response(['error' => 'invalid_client'], 401),
+    ]);
+
+    $client = makeClient([
+        'auth' => [
+            'enabled' => true,
+            'token_url' => 'http://auth.example/token',
+            'client_id' => 'cid',
+            'client_secret' => 'csecret',
+        ],
+    ]);
+
+    $client->createVerification(['dcql_query' => []]);
+})->throws(SwissEidException::class);
+
 it('throws VerifierConnectionException when token endpoint is unreachable', function (): void {
     Cache::flush();
 
