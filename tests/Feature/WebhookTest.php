@@ -92,7 +92,7 @@ it('processes a failed webhook', function (): void {
     Event::assertDispatched(VerificationFailed::class);
 });
 
-it('returns 404 if verification not found', function (): void {
+it('acknowledges webhooks for unknown verification ids with 200 to stop retries', function (): void {
     Http::fake([
         '*' => Http::response(['state' => 'SUCCESS'], 200),
     ]);
@@ -100,5 +100,24 @@ it('returns 404 if verification not found', function (): void {
     $this->postJson('/swiss-eid/webhook', [
         'verification_id' => 'does-not-exist',
     ], ['X-Verifier-Api-Key' => 'test-secret'])
-        ->assertStatus(404);
+        ->assertOk()
+        ->assertJson(['status' => 'ignored']);
+});
+
+it('is idempotent and ignores webhooks for already-terminal verifications', function (): void {
+    Event::fake([VerificationCompleted::class, VerificationFailed::class]);
+    Http::fake();
+
+    $verification = createVerificationRecord('verifier-terminal-01');
+    $verification->update(['state' => VerificationState::Success]);
+
+    $this->postJson('/swiss-eid/webhook', [
+        'verification_id' => 'verifier-terminal-01',
+    ], ['X-Verifier-Api-Key' => 'test-secret'])
+        ->assertOk()
+        ->assertJson(['status' => 'ok']);
+
+    Event::assertNotDispatched(VerificationCompleted::class);
+    Event::assertNotDispatched(VerificationFailed::class);
+    Http::assertNothingSent();
 });
