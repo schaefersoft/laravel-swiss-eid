@@ -27,7 +27,7 @@ class WebhookController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        \Log::info('swiss-eid webhook payload', ['body' => $request->all(), 'raw' => $request->getContent()]);
+        \Log::debug('swiss-eid webhook payload', ['body' => $request->all()]);
 
         $verificationId = (string) $request->input('verification_id', '');
 
