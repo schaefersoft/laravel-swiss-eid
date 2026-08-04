@@ -56,7 +56,7 @@ SWISS_EID_WEBHOOK_API_KEY=a-secret-key-at-least-32-characters-long
 
 # From your swiyu verifier configuration (Beta-ID requires both vct values):
 SWISS_EID_CREDENTIAL_TYPE=betaid-sdjwt,urn:vct:ch.admin.bcs.betaid
-SWISS_EID_ACCEPTED_ISSUERS=did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
+SWISS_EID_ACCEPTED_ISSUERS=did:webvh:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
 ```
 
 ### Step 4 — Start a verification and show the QR code
@@ -189,7 +189,7 @@ services:
     ports:
       - "8083:8080"
     environment:
-      SWIYU_VERIFIER_DID: "did:tdw:...your-verifier-did..."
+      SWIYU_VERIFIER_DID: "did:webvh:...your-verifier-did..."
       SWIYU_SIGNING_KEY: |
         -----BEGIN EC PRIVATE KEY-----
         ...
@@ -259,9 +259,14 @@ MHcCAQEEIE+...
 
 ### 5. Accepted issuer DIDs
 
-The Swiss eID beta trust infrastructure uses `did:tdw:` identifiers. For a
-verification to succeed, the credential presented by the wallet must be issued
-by a DID that your verifier **trusts**. In practice you will list at least:
+The Swiss eID beta trust infrastructure uses `did:webvh:` identifiers.
+`did:tdw:` is deprecated: there is no in-place migration, existing did:tdw DIDs
+are frozen for updates from ~October 2026, and re-onboarding with a new
+did:webvh DID via the [swiyu Service Portal](https://portal.trust-infra.swiyu-int.admin.ch)
+is required (see the [onboarding cookbook](https://swiyu-admin-ch.github.io/cookbooks/onboarding-base-and-trust-registry/)).
+For a verification to succeed, the credential presented by the wallet must be
+issued by a DID that your verifier **trusts**. In practice you will list at
+least:
 
 - Your **own** verifier DID (useful for self-issued test credentials).
 - The **official Beta-ID issuer DID** if you want to accept real beta credentials.
@@ -269,7 +274,7 @@ by a DID that your verifier **trusts**. In practice you will list at least:
 Example for `.env` (comma-separated):
 
 ```env
-SWISS_EID_ACCEPTED_ISSUERS=did:tdw:Qm...your-verifier:...,did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
+SWISS_EID_ACCEPTED_ISSUERS=did:webvh:Qm...your-verifier:...,did:webvh:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
 ```
 
 If you do not know the issuer DID of a credential, you can extract it from a
@@ -408,7 +413,7 @@ SwissEid::verify()->field('$.custom_path');  // passed through verbatim
 SwissEid::verify()
     ->credentialType('your-credential-type')
     ->acceptedIssuers([
-        'did:tdw:QmPEZ...your-trusted-issuer',
+        'did:webvh:QmPEZ...your-trusted-issuer',
     ])
     ->ageOver18()
     ->create();
@@ -662,7 +667,7 @@ Swiss eID Doctor — configuration diagnostics
   ...
 
   DID Formats (accepted_issuers)
-    ✓ Valid DID (method: did:tdw:…) — did:tdw:QmPEZ…
+    ✓ Valid DID (method: did:webvh:…) — did:webvh:QmPEZ…
 
   Webhook Reachability
       Probing: https://your-app.example.com/swiss-eid/webhook

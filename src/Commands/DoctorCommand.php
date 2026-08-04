@@ -214,7 +214,12 @@ class DoctorCommand extends Command
             } else {
                 [, $method] = explode(':', $did, 3);
                 $preview = mb_strlen($did) > 60 ? mb_substr($did, 0, 57).'…' : $did;
-                $this->checkOk("Valid DID (method: did:{$method}:…) — {$preview}");
+
+                if ($method === 'tdw') {
+                    $this->checkWarn("did:tdw is deprecated — re-onboard to did:webvh (updates to did:tdw DIDs are frozen from ~Oct 2026) — {$preview}");
+                } else {
+                    $this->checkOk("Valid DID (method: did:{$method}:…) — {$preview}");
+                }
             }
         }
     }

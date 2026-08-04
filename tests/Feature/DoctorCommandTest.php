@@ -14,7 +14,7 @@ beforeEach(function (): void {
         'swiss-eid.webhook.api_key_header' => 'X-Verifier-Api-Key',
         'swiss-eid.webhook.api_key' => str_repeat('a', 32),
         'swiss-eid.credentials.type' => 'test-vct',
-        'swiss-eid.credentials.accepted_issuers' => ['did:tdw:QmTest:example.com'],
+        'swiss-eid.credentials.accepted_issuers' => ['did:webvh:QmTest:example.com'],
         'swiss-eid.auth.enabled' => false,
         'swiss-eid.verification_ttl' => 300,
         'swiss-eid.user_id_type' => 'int',
@@ -174,6 +174,15 @@ it('fails when an accepted issuer DID is in an invalid format', function (): voi
     $this->artisan('swiss-eid:doctor')
         ->expectsOutputToContain('Invalid DID format')
         ->assertExitCode(1);
+});
+
+it('warns when an accepted issuer still uses the deprecated did:tdw method', function (): void {
+    Http::fake();
+    config(['swiss-eid.credentials.accepted_issuers' => ['did:tdw:QmTest:example.com']]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('did:tdw is deprecated')
+        ->assertExitCode(0);
 });
 
 // ── Webhook reachability ──────────────────────────────────────────────────────
