@@ -54,8 +54,8 @@ variables, and optionally runs `php artisan migrate`.
 SWISS_EID_VERIFIER_URL=https://abc123.ngrok-free.app
 SWISS_EID_WEBHOOK_API_KEY=a-secret-key-at-least-32-characters-long
 
-# From your swiyu verifier configuration:
-SWISS_EID_CREDENTIAL_TYPE=https://eid.admin.ch/credentials/swiss-eid-beta/1.0
+# From your swiyu verifier configuration (Beta-ID requires both vct values):
+SWISS_EID_CREDENTIAL_TYPE=betaid-sdjwt,urn:vct:ch.admin.bcs.betaid
 SWISS_EID_ACCEPTED_ISSUERS=did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
 ```
 
@@ -328,7 +328,7 @@ environment variables:
 | `SWISS_EID_WEBHOOK_KEY_HEADER` | `X-Verifier-Api-Key` | HTTP header carrying the shared webhook secret. |
 | `SWISS_EID_WEBHOOK_API_KEY` | – | Shared secret; **required** — the middleware returns 401 without it. |
 | `SWISS_EID_RESPONSE_MODE` | `direct_post.jwt` | Response mode for wallet responses. swiyu wallets enforce encrypted responses (`direct_post.jwt`) since 2026-08-17 ([CD-004](https://swiyu-admin-ch.github.io/change-dossiers/CD-004-Verifier-Security-Enforcements/)); `direct_post` only works against older test setups. |
-| `SWISS_EID_CREDENTIAL_TYPE` | – | Credential type (`vct`) to request from the wallet. **Required** — set to the vct matching your swiyu environment. |
+| `SWISS_EID_CREDENTIAL_TYPE` | – | Credential type(s) (`vct`) to request from the wallet, comma-separated for multiple. **Required** — the Beta-ID needs both `betaid-sdjwt` and `urn:vct:ch.admin.bcs.betaid`. |
 | `SWISS_EID_ACCEPTED_ISSUERS` | – | Comma-separated list of accepted issuer DIDs. At least one is required. |
 | `SWISS_EID_VERIFICATION_TTL` | `300` | Seconds a pending verification stays valid before being marked `expired`. |
 | `SWISS_EID_POLLING_ENABLED` | `true` | Enable the built-in `/swiss-eid/status/{id}` JSON endpoint. |

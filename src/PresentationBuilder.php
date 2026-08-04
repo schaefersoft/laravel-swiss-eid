@@ -19,7 +19,8 @@ class PresentationBuilder
     /** SD-JWT VC credential format (OID4VP 1.0 / SD-JWT VC draft >= 06). */
     private const FORMAT = 'dc+sd-jwt';
 
-    private string $credentialType;
+    /** @var list<string> */
+    private array $credentialTypes;
 
     /**
      * Requested claims as DCQL path-segment arrays, e.g. ['given_name'] or
@@ -34,9 +35,12 @@ class PresentationBuilder
 
     private string $responseMode;
 
-    public function __construct(string $credentialType, string $responseMode = 'direct_post.jwt')
+    /**
+     * @param  string|list<string>  $credentialType  One or more vct values; a string may be comma-separated.
+     */
+    public function __construct(string|array $credentialType, string $responseMode = 'direct_post.jwt')
     {
-        $this->credentialType = $credentialType;
+        $this->credentialTypes = $this->normaliseTypes($credentialType);
         $this->responseMode = $responseMode;
     }
 
@@ -57,11 +61,13 @@ class PresentationBuilder
     }
 
     /**
-     * Change the credential type (vct).
+     * Change the credential type(s) (vct).
+     *
+     * @param  string|list<string>  $vct
      */
-    public function setCredentialType(string $vct): self
+    public function setCredentialType(string|array $vct): self
     {
-        $this->credentialType = $vct;
+        $this->credentialTypes = $this->normaliseTypes($vct);
 
         return $this;
     }
@@ -115,7 +121,7 @@ class PresentationBuilder
             'id' => self::CREDENTIAL_ID,
             'format' => self::FORMAT,
             'meta' => [
-                'vct_values' => [$this->credentialType],
+                'vct_values' => $this->credentialTypes,
             ],
         ];
 
@@ -135,6 +141,20 @@ class PresentationBuilder
                 'credentials' => [$credential],
             ],
         ];
+    }
+
+    /**
+     * @param  string|list<string>  $vct
+     * @return list<string>
+     */
+    private function normaliseTypes(string|array $vct): array
+    {
+        $values = is_string($vct) ? explode(',', $vct) : $vct;
+
+        return array_values(array_filter(
+            array_map(static fn ($value): string => trim((string) $value), $values),
+            static fn (string $value): bool => $value !== '',
+        ));
     }
 
     /**

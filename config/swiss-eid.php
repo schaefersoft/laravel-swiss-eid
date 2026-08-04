@@ -43,6 +43,8 @@ return [
     |
     | Define which credential type to request and which issuers are accepted.
     | The accepted_issuers list should contain the DIDs of trusted issuers.
+    | type accepts a comma-separated list of vct values; the Beta-ID requires
+    | both "betaid-sdjwt" and "urn:vct:ch.admin.bcs.betaid".
     |
     */
     'credentials' => [

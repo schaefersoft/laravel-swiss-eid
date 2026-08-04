@@ -19,6 +19,16 @@ it('builds a DCQL query with the vct in meta.vct_values', function (): void {
     expect($credential['meta']['vct_values'])->toBe(['test-sdjwt']);
 });
 
+it('supports multiple vct values as array and comma-separated string', function (): void {
+    $fromArray = new PresentationBuilder(credentialType: ['betaid-sdjwt', 'urn:vct:ch.admin.bcs.betaid']);
+    $fromString = new PresentationBuilder(credentialType: 'betaid-sdjwt, urn:vct:ch.admin.bcs.betaid');
+
+    $expected = ['betaid-sdjwt', 'urn:vct:ch.admin.bcs.betaid'];
+
+    expect($fromArray->build()['dcql_query']['credentials'][0]['meta']['vct_values'])->toBe($expected);
+    expect($fromString->build()['dcql_query']['credentials'][0]['meta']['vct_values'])->toBe($expected);
+});
+
 it('adds age_over_18 as a DCQL claim path', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
     $builder->addAgeOver18();

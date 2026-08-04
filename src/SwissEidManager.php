@@ -95,9 +95,11 @@ class SwissEidManager
     }
 
     /**
-     * Override the credential type (vct).
+     * Override the credential type(s) (vct).
+     *
+     * @param  string|list<string>  $type
      */
-    public function credentialType(string $type): static
+    public function credentialType(string|array $type): static
     {
         $this->builder->setCredentialType($type);
 
