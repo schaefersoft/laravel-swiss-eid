@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.4.1...v0.4.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* bump guzzle to patched version resolving security advisories ([ab8f9b0](https://github.com/schaefersoft/laravel-swiss-eid/commit/ab8f9b0d799a67ad3d134a19ccbfe512aaa778aa))
+* bump guzzle to patched version resolving security advisories ([91dc753](https://github.com/schaefersoft/laravel-swiss-eid/commit/91dc75347e8892717d83cd43396560b6e085173e))
+
 ## [0.4.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.4.0...v0.4.1) (2026-06-23)
 
 
