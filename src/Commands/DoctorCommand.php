@@ -14,6 +14,9 @@ class DoctorCommand extends Command
 
     protected $description = 'Validate the Swiss eID configuration, private key, DIDs, and webhook reachability';
 
+    /** Minimum swiyu-verifier version: CD-004 wallet enforcement + CD-008 trust-validation fix. */
+    private const MIN_VERIFIER_VERSION = '4.1.2';
+
     private int $errors = 0;
 
     private int $warnings = 0;
@@ -25,6 +28,7 @@ class DoctorCommand extends Command
         $this->newLine();
 
         $this->runSection('Verifier', fn () => $this->checkVerifierConfig());
+        $this->runSection('Verifier Version', fn () => $this->checkVerifierVersion());
         $this->runSection('Webhook', fn () => $this->checkWebhookConfig());
         $this->runSection('Credentials', fn () => $this->checkCredentialConfig());
         $this->runSection('OAuth2 Auth', fn () => $this->checkAuthConfig());
@@ -64,6 +68,33 @@ class DoctorCommand extends Command
             $this->checkWarn('SWISS_EID_RESPONSE_MODE is direct_post — swiyu wallets enforce encrypted responses (direct_post.jwt) since 2026-08-17 (CD-004)');
         } else {
             $this->checkOk("Response mode: {$mode}");
+        }
+    }
+
+    private function checkVerifierVersion(): void
+    {
+        $baseUrl = rtrim((string) config('swiss-eid.verifier.base_url'), '/');
+
+        try {
+            $info = Http::timeout(5)->acceptJson()->get($baseUrl.'/actuator/info')->throw()->json();
+        } catch (\Throwable) {
+            $this->line('    - Could not read /actuator/info — manually ensure swiyu-verifier >= '.self::MIN_VERIFIER_VERSION);
+
+            return;
+        }
+
+        $version = $info['build']['version'] ?? $info['app']['version'] ?? null;
+
+        if (! is_string($version) || $version === '') {
+            $this->line('    - Verifier exposes no version info — manually ensure swiyu-verifier >= '.self::MIN_VERIFIER_VERSION);
+
+            return;
+        }
+
+        if (version_compare($version, self::MIN_VERIFIER_VERSION, '<')) {
+            $this->checkFail("swiyu-verifier {$version} is outdated — upgrade to >= ".self::MIN_VERIFIER_VERSION.' (CD-004 wallet enforcement, CD-008 critical trust-validation fix)');
+        } else {
+            $this->checkOk("swiyu-verifier version: {$version}");
         }
     }
 

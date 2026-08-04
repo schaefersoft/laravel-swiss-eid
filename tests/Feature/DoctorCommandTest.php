@@ -23,8 +23,36 @@ beforeEach(function (): void {
 });
 
 it('passes and exits 0 with a valid configuration', function (): void {
+    Http::fake();
+
     $this->artisan('swiss-eid:doctor')
         ->expectsOutputToContain('All checks passed')
+        ->assertExitCode(0);
+});
+
+// ── Verifier version ──────────────────────────────────────────────────────────
+
+it('fails when the verifier reports a version below the minimum', function (): void {
+    Http::fake(['*/actuator/info' => Http::response(['build' => ['version' => '4.1.1']])]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('outdated')
+        ->assertExitCode(1);
+});
+
+it('passes when the verifier reports a supported version', function (): void {
+    Http::fake(['*/actuator/info' => Http::response(['build' => ['version' => '4.2.0']])]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('swiyu-verifier version: 4.2.0')
+        ->assertExitCode(0);
+});
+
+it('hints at the minimum verifier version when actuator info is unavailable', function (): void {
+    Http::fake(['*/actuator/info' => fn () => throw new ConnectionException('refused')]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('manually ensure swiyu-verifier >= 4.1.2')
         ->assertExitCode(0);
 });
 

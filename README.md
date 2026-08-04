@@ -172,6 +172,10 @@ You need to run the official verifier locally (or host it somewhere) before
 this package can do anything:
 
 - Repository: <https://github.com/swiyu-admin-ch/swiyu-verifier>
+- Minimum version: **4.1.2** — required for the wallet security enforcements
+  active since 2026-08-17 ([CD-004](https://swiyu-admin-ch.github.io/change-dossiers/CD-004-Verifier-Security-Enforcements/))
+  and the critical trust-validation fix ([CD-008](https://swiyu-admin-ch.github.io/change-dossiers/CD-008-Critical-Vulnerability-Generic-Verifier/));
+  4.1.0/4.1.1 are vulnerable to an issuer-impersonation bypass.
 - Default port: `8083`
 - Expected API base path: `/management/api`
 
