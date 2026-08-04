@@ -9,12 +9,12 @@ beforeEach(function (): void {
     config([
         'swiss-eid.verifier.base_url' => 'http://localhost:8083',
         'swiss-eid.verifier.timeout' => 10,
-        'swiss-eid.verifier.response_mode' => 'direct_post',
+        'swiss-eid.verifier.response_mode' => 'direct_post.jwt',
         'swiss-eid.webhook.path' => '/swiss-eid/webhook',
         'swiss-eid.webhook.api_key_header' => 'X-Verifier-Api-Key',
         'swiss-eid.webhook.api_key' => str_repeat('a', 32),
         'swiss-eid.credentials.type' => 'test-vct',
-        'swiss-eid.credentials.accepted_issuers' => ['did:tdw:QmTest:example.com'],
+        'swiss-eid.credentials.accepted_issuers' => ['did:webvh:QmTest:example.com'],
         'swiss-eid.auth.enabled' => false,
         'swiss-eid.verification_ttl' => 300,
         'swiss-eid.user_id_type' => 'int',
@@ -23,8 +23,36 @@ beforeEach(function (): void {
 });
 
 it('passes and exits 0 with a valid configuration', function (): void {
+    Http::fake();
+
     $this->artisan('swiss-eid:doctor')
         ->expectsOutputToContain('All checks passed')
+        ->assertExitCode(0);
+});
+
+// ── Verifier version ──────────────────────────────────────────────────────────
+
+it('fails when the verifier reports a version below the minimum', function (): void {
+    Http::fake(['*/actuator/info' => Http::response(['build' => ['version' => '4.1.1']])]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('outdated')
+        ->assertExitCode(1);
+});
+
+it('passes when the verifier reports a supported version', function (): void {
+    Http::fake(['*/actuator/info' => Http::response(['build' => ['version' => '4.2.0']])]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('swiyu-verifier version: 4.2.0')
+        ->assertExitCode(0);
+});
+
+it('hints at the minimum verifier version when actuator info is unavailable', function (): void {
+    Http::fake(['*/actuator/info' => fn () => throw new ConnectionException('refused')]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('manually ensure swiyu-verifier >= 4.1.2')
         ->assertExitCode(0);
 });
 
@@ -90,6 +118,32 @@ it('fails when accepted issuers list is empty', function (): void {
         ->assertExitCode(1);
 });
 
+it('accepts trust anchors as alternative to accepted issuers', function (): void {
+    Http::fake();
+    config([
+        'swiss-eid.credentials.accepted_issuers' => [],
+        'swiss-eid.credentials.trust_anchors' => [
+            ['did' => 'did:webvh:QmAnchor:example.com', 'trust_registry_uri' => 'https://trust-reg.example.com'],
+        ],
+    ]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('Trust anchor: did:webvh:QmAnchor:example.com')
+        ->assertExitCode(0);
+});
+
+it('fails when a trust anchor is missing an https registry uri', function (): void {
+    config([
+        'swiss-eid.credentials.trust_anchors' => [
+            ['did' => 'did:webvh:QmAnchor:example.com', 'trust_registry_uri' => 'http://insecure.example.com'],
+        ],
+    ]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('https trust_registry_uri')
+        ->assertExitCode(1);
+});
+
 // ── OAuth2 ────────────────────────────────────────────────────────────────────
 
 it('validates oauth2 sub-config when auth is enabled', function (): void {
@@ -146,6 +200,15 @@ it('fails when an accepted issuer DID is in an invalid format', function (): voi
     $this->artisan('swiss-eid:doctor')
         ->expectsOutputToContain('Invalid DID format')
         ->assertExitCode(1);
+});
+
+it('warns when an accepted issuer still uses the deprecated did:tdw method', function (): void {
+    Http::fake();
+    config(['swiss-eid.credentials.accepted_issuers' => ['did:tdw:QmTest:example.com']]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('did:tdw is deprecated')
+        ->assertExitCode(0);
 });
 
 // ── Webhook reachability ──────────────────────────────────────────────────────

@@ -95,11 +95,31 @@ class SwissEidManager
     }
 
     /**
-     * Override the credential type (vct).
+     * Override the credential type(s) (vct).
+     *
+     * @param  string|list<string>  $type
      */
-    public function credentialType(string $type): static
+    public function credentialType(string|array $type): static
     {
         $this->builder->setCredentialType($type);
+
+        return $this;
+    }
+
+    /**
+     * Set the verification purpose (vqPS) registered at the trust infrastructure.
+     * Strings are wrapped as the 'default' localization.
+     *
+     * @param  string|array<string, string>  $name
+     * @param  string|array<string, string>  $description
+     */
+    public function purpose(string $scope, string|array $name, string|array $description): static
+    {
+        $this->builder->setVerificationPurpose([
+            'scope' => $scope,
+            'purpose_name' => is_string($name) ? ['default' => $name] : $name,
+            'purpose_description' => is_string($description) ? ['default' => $description] : $description,
+        ]);
 
         return $this;
     }
@@ -122,6 +142,18 @@ class SwissEidManager
     public function acceptedIssuers(array $dids): static
     {
         $this->builder->setAcceptedIssuers($dids);
+
+        return $this;
+    }
+
+    /**
+     * Override the trust anchors accepted for this verification.
+     *
+     * @param  list<array{did: string, trust_registry_uri: string}>  $anchors
+     */
+    public function trustAnchors(array $anchors): static
+    {
+        $this->builder->setTrustAnchors($anchors);
 
         return $this;
     }
@@ -224,7 +256,7 @@ class SwissEidManager
     {
         $builder = new PresentationBuilder(
             credentialType: (string) ($this->config['credentials']['type'] ?? ''),
-            responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post'),
+            responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post.jwt'),
         );
 
         $issuers = array_values(array_filter(
@@ -234,6 +266,22 @@ class SwissEidManager
 
         if ($issuers !== []) {
             $builder->setAcceptedIssuers($issuers);
+        }
+
+        /** @var list<array{did: string, trust_registry_uri: string}> $anchors */
+        $anchors = array_values(array_filter(
+            (array) ($this->config['credentials']['trust_anchors'] ?? []),
+            static fn ($anchor) => is_array($anchor) && $anchor !== [],
+        ));
+
+        if ($anchors !== []) {
+            $builder->setTrustAnchors($anchors);
+        }
+
+        $purpose = $this->config['verification_purpose'] ?? null;
+
+        if (is_array($purpose) && $purpose !== []) {
+            $builder->setVerificationPurpose($purpose);
         }
 
         return $builder;

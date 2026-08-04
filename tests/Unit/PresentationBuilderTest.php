@@ -10,13 +10,23 @@ it('builds a DCQL query with the vct in meta.vct_values', function (): void {
 
     expect($result)
         ->toHaveKey('dcql_query')
-        ->toHaveKey('response_mode', 'direct_post');
+        ->toHaveKey('response_mode', 'direct_post.jwt');
 
     $credential = $result['dcql_query']['credentials'][0];
 
     expect($credential['id'])->toBe('swiss_eid');
     expect($credential['format'])->toBe('dc+sd-jwt');
     expect($credential['meta']['vct_values'])->toBe(['test-sdjwt']);
+});
+
+it('supports multiple vct values as array and comma-separated string', function (): void {
+    $fromArray = new PresentationBuilder(credentialType: ['betaid-sdjwt', 'urn:vct:ch.admin.bcs.betaid']);
+    $fromString = new PresentationBuilder(credentialType: 'betaid-sdjwt, urn:vct:ch.admin.bcs.betaid');
+
+    $expected = ['betaid-sdjwt', 'urn:vct:ch.admin.bcs.betaid'];
+
+    expect($fromArray->build()['dcql_query']['credentials'][0]['meta']['vct_values'])->toBe($expected);
+    expect($fromString->build()['dcql_query']['credentials'][0]['meta']['vct_values'])->toBe($expected);
 });
 
 it('adds age_over_18 as a DCQL claim path', function (): void {
@@ -80,6 +90,30 @@ it('omits the claims key when no fields are requested', function (): void {
     expect($result['dcql_query']['credentials'][0])->not->toHaveKey('claims');
 });
 
+it('includes trust_anchors only when set', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+
+    expect($builder->build())->not->toHaveKey('trust_anchors');
+
+    $anchors = [['did' => 'did:webvh:QmAnchor:example.com', 'trust_registry_uri' => 'https://trust-reg.example.com']];
+
+    expect($builder->setTrustAnchors($anchors)->build()['trust_anchors'])->toBe($anchors);
+});
+
+it('includes verification_purpose only when set', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+
+    expect($builder->build())->not->toHaveKey('verification_purpose');
+
+    $purpose = [
+        'scope' => 'com.example.age_check',
+        'purpose_name' => ['default' => 'Age verification'],
+        'purpose_description' => ['default' => 'Required for checkout'],
+    ];
+
+    expect($builder->setVerificationPurpose($purpose)->build()['verification_purpose'])->toBe($purpose);
+});
+
 it('sets accepted issuer dids', function (): void {
     $dids = ['did:example:123', 'did:example:456'];
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
@@ -89,24 +123,24 @@ it('sets accepted issuer dids', function (): void {
     expect($result['accepted_issuer_dids'])->toBe($dids);
 });
 
-it('uses direct_post response mode by default', function (): void {
+it('uses direct_post.jwt response mode by default', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post.jwt');
+});
+
+it('allows overriding response mode to direct_post', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $builder->setResponseMode('direct_post');
     $result = $builder->build();
 
     expect($result['response_mode'])->toBe('direct_post');
 });
 
-it('allows overriding response mode to direct_post.jwt', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
-    $builder->setResponseMode('direct_post.jwt');
-    $result = $builder->build();
-
-    expect($result['response_mode'])->toBe('direct_post.jwt');
-});
-
 it('accepts response mode via constructor', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'test-sdjwt', responseMode: 'direct_post.jwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt', responseMode: 'direct_post');
     $result = $builder->build();
 
-    expect($result['response_mode'])->toBe('direct_post.jwt');
+    expect($result['response_mode'])->toBe('direct_post');
 });

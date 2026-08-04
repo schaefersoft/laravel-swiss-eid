@@ -54,9 +54,9 @@ variables, and optionally runs `php artisan migrate`.
 SWISS_EID_VERIFIER_URL=https://abc123.ngrok-free.app
 SWISS_EID_WEBHOOK_API_KEY=a-secret-key-at-least-32-characters-long
 
-# From your swiyu verifier configuration:
-SWISS_EID_CREDENTIAL_TYPE=https://eid.admin.ch/credentials/swiss-eid-beta/1.0
-SWISS_EID_ACCEPTED_ISSUERS=did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
+# From your swiyu verifier configuration (Beta-ID requires both vct values):
+SWISS_EID_CREDENTIAL_TYPE=betaid-sdjwt,urn:vct:ch.admin.bcs.betaid
+SWISS_EID_ACCEPTED_ISSUERS=did:webvh:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
 ```
 
 ### Step 4 — Start a verification and show the QR code
@@ -172,6 +172,10 @@ You need to run the official verifier locally (or host it somewhere) before
 this package can do anything:
 
 - Repository: <https://github.com/swiyu-admin-ch/swiyu-verifier>
+- Minimum version: **4.1.2** — required for the wallet security enforcements
+  active since 2026-08-17 ([CD-004](https://swiyu-admin-ch.github.io/change-dossiers/CD-004-Verifier-Security-Enforcements/))
+  and the critical trust-validation fix ([CD-008](https://swiyu-admin-ch.github.io/change-dossiers/CD-008-Critical-Vulnerability-Generic-Verifier/));
+  4.1.0/4.1.1 are vulnerable to an issuer-impersonation bypass.
 - Default port: `8083`
 - Expected API base path: `/management/api`
 
@@ -185,7 +189,7 @@ services:
     ports:
       - "8083:8080"
     environment:
-      SWIYU_VERIFIER_DID: "did:tdw:...your-verifier-did..."
+      SWIYU_VERIFIER_DID: "did:webvh:...your-verifier-did..."
       SWIYU_SIGNING_KEY: |
         -----BEGIN EC PRIVATE KEY-----
         ...
@@ -255,9 +259,14 @@ MHcCAQEEIE+...
 
 ### 5. Accepted issuer DIDs
 
-The Swiss eID beta trust infrastructure uses `did:tdw:` identifiers. For a
-verification to succeed, the credential presented by the wallet must be issued
-by a DID that your verifier **trusts**. In practice you will list at least:
+The Swiss eID beta trust infrastructure uses `did:webvh:` identifiers.
+`did:tdw:` is deprecated: there is no in-place migration, existing did:tdw DIDs
+are frozen for updates from ~October 2026, and re-onboarding with a new
+did:webvh DID via the [swiyu Service Portal](https://portal.trust-infra.swiyu-int.admin.ch)
+is required (see the [onboarding cookbook](https://swiyu-admin-ch.github.io/cookbooks/onboarding-base-and-trust-registry/)).
+For a verification to succeed, the credential presented by the wallet must be
+issued by a DID that your verifier **trusts**. In practice you will list at
+least:
 
 - Your **own** verifier DID (useful for self-issued test credentials).
 - The **official Beta-ID issuer DID** if you want to accept real beta credentials.
@@ -265,12 +274,38 @@ by a DID that your verifier **trusts**. In practice you will list at least:
 Example for `.env` (comma-separated):
 
 ```env
-SWISS_EID_ACCEPTED_ISSUERS=did:tdw:Qm...your-verifier:...,did:tdw:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
+SWISS_EID_ACCEPTED_ISSUERS=did:webvh:Qm...your-verifier:...,did:webvh:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjCumw:identifier-reg.trust-infra.swiyu-int.admin.ch:api:v1:did:9a5559f0-b81c-4368-a170-e7b4ae424527
 ```
 
 If you do not know the issuer DID of a credential, you can extract it from a
 decoded SD-JWT (the `iss` field) or from the verifier logs when it rejects a
 presentation with `issuer_not_accepted`.
+
+Alternatively (or additionally) configure **trust anchors** — every DID with a
+trust statement from the anchor is accepted, without listing each issuer. The
+verifier requires at least one of the two to be non-empty:
+
+```php
+// config/swiss-eid.php
+'credentials' => [
+    'trust_anchors' => [
+        [
+            'did' => 'did:webvh:...anchor-did...',
+            'trust_registry_uri' => 'https://trust-reg.trust-infra.swiyu-int.admin.ch',
+        ],
+    ],
+],
+```
+
+```php
+// Or per request:
+SwissEid::verify()
+    ->trustAnchors([
+        ['did' => 'did:webvh:...', 'trust_registry_uri' => 'https://trust-reg.trust-infra.swiyu-int.admin.ch'],
+    ])
+    ->ageOver18()
+    ->create();
+```
 
 ### 6. Swiss wallet app (for testing)
 
@@ -323,8 +358,8 @@ environment variables:
 | `SWISS_EID_WEBHOOK_PATH` | `/swiss-eid/webhook` | Route the verifier POSTs to when a wallet has responded. |
 | `SWISS_EID_WEBHOOK_KEY_HEADER` | `X-Verifier-Api-Key` | HTTP header carrying the shared webhook secret. |
 | `SWISS_EID_WEBHOOK_API_KEY` | – | Shared secret; **required** — the middleware returns 401 without it. |
-| `SWISS_EID_RESPONSE_MODE` | `direct_post` | Response mode for wallet responses. Use `direct_post.jwt` for encrypted wallet-to-verifier transport (requires verifier v2.3.1+). |
-| `SWISS_EID_CREDENTIAL_TYPE` | – | Credential type (`vct`) to request from the wallet. **Required** — set to the vct matching your swiyu environment. |
+| `SWISS_EID_RESPONSE_MODE` | `direct_post.jwt` | Response mode for wallet responses. swiyu wallets enforce encrypted responses (`direct_post.jwt`) since 2026-08-17 ([CD-004](https://swiyu-admin-ch.github.io/change-dossiers/CD-004-Verifier-Security-Enforcements/)); `direct_post` only works against older test setups. |
+| `SWISS_EID_CREDENTIAL_TYPE` | – | Credential type(s) (`vct`) to request from the wallet, comma-separated for multiple. **Required** — the Beta-ID needs both `betaid-sdjwt` and `urn:vct:ch.admin.bcs.betaid`. |
 | `SWISS_EID_ACCEPTED_ISSUERS` | – | Comma-separated list of accepted issuer DIDs. At least one is required. |
 | `SWISS_EID_VERIFICATION_TTL` | `300` | Seconds a pending verification stays valid before being marked `expired`. |
 | `SWISS_EID_POLLING_ENABLED` | `true` | Enable the built-in `/swiss-eid/status/{id}` JSON endpoint. |
@@ -404,8 +439,29 @@ SwissEid::verify()->field('$.custom_path');  // passed through verbatim
 SwissEid::verify()
     ->credentialType('your-credential-type')
     ->acceptedIssuers([
-        'did:tdw:QmPEZ...your-trusted-issuer',
+        'did:webvh:QmPEZ...your-trusted-issuer',
     ])
+    ->ageOver18()
+    ->create();
+```
+
+### Verification purpose (vqPS)
+
+The productive e-ID requires verifiers to register their data queries and
+purpose at the trust infrastructure. Set it globally via the
+`verification_purpose` config key or per request:
+
+```php
+SwissEid::verify()
+    ->ageOver18()
+    ->purpose('com.example.age_check', 'Age verification', 'Required for checkout')
+    ->create();
+
+// Localized variants take arrays instead of strings:
+SwissEid::verify()
+    ->purpose('com.example.age_check',
+        ['default' => 'Age verification', 'de-ch' => 'Altersverifikation'],
+        ['default' => 'Required for checkout'])
     ->ageOver18()
     ->create();
 ```
@@ -658,7 +714,7 @@ Swiss eID Doctor — configuration diagnostics
   ...
 
   DID Formats (accepted_issuers)
-    ✓ Valid DID (method: did:tdw:…) — did:tdw:QmPEZ…
+    ✓ Valid DID (method: did:webvh:…) — did:webvh:QmPEZ…
 
   Webhook Reachability
       Probing: https://your-app.example.com/swiss-eid/webhook

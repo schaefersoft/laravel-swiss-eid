@@ -18,7 +18,7 @@ return [
         'base_url' => env('SWISS_EID_VERIFIER_URL', 'http://localhost:8083'),
         'management_path' => '/management/api',
         'timeout' => env('SWISS_EID_TIMEOUT', 10),
-        'response_mode' => env('SWISS_EID_RESPONSE_MODE', 'direct_post'),
+        'response_mode' => env('SWISS_EID_RESPONSE_MODE', 'direct_post.jwt'),
     ],
 
     /*
@@ -43,14 +43,40 @@ return [
     |
     | Define which credential type to request and which issuers are accepted.
     | The accepted_issuers list should contain the DIDs of trusted issuers.
+    | type accepts a comma-separated list of vct values; the Beta-ID requires
+    | both "betaid-sdjwt" and "urn:vct:ch.admin.bcs.betaid".
     |
     */
     'credentials' => [
         'type' => env('SWISS_EID_CREDENTIAL_TYPE'),
         'accepted_issuers' => array_filter(explode(',', (string) env('SWISS_EID_ACCEPTED_ISSUERS', ''))),
+
+        /*
+         * Alternative to accepted_issuers: every DID with a trust statement
+         * from an anchor is accepted. The verifier requires at least one of
+         * the two to be non-empty. Entries:
+         * ['did' => 'did:webvh:...', 'trust_registry_uri' => 'https://...']
+         */
+        'trust_anchors' => [],
+
         'sd_jwt_alg' => 'ES256',
         'kb_jwt_alg' => 'ES256',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verification Purpose (vqPS)
+    |--------------------------------------------------------------------------
+    |
+    | Optional transparency metadata sent with each verification request and
+    | registered at the trust infrastructure. Required for the productive
+    | e-ID, where verifiers must register their data queries and purpose.
+    | Structure: ['scope' => 'com.example.age_check',
+    |             'purpose_name' => ['default' => 'Age verification'],
+    |             'purpose_description' => ['default' => '...']]
+    |
+    */
+    'verification_purpose' => null,
 
     /*
     |--------------------------------------------------------------------------

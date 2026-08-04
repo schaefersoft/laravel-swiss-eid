@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
 use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
+use SwissEid\LaravelSwissEid\Events\VerificationExpired;
 use SwissEid\LaravelSwissEid\Events\VerificationFailed;
+use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 use SwissEid\LaravelSwissEid\VerifierClient;
 
@@ -50,8 +52,23 @@ class WebhookController extends Controller
             return response()->json(['status' => 'ok']);
         }
 
-        // Fetch the full result from the verifier
-        $result = $this->client->getVerification($verificationId);
+        // Fetch the full result from the verifier. Since verifier 4.0.0 an
+        // expired verification returns 404 instead of the object.
+        try {
+            $result = $this->client->getVerification($verificationId);
+        } catch (SwissEidException $e) {
+            if ($e->getCode() === 404) {
+                $verification->update([
+                    'state' => VerificationState::Expired,
+                    'webhook_received_at' => now(),
+                ]);
+                event(new VerificationExpired($verification->refresh()));
+
+                return response()->json(['status' => 'ok']);
+            }
+
+            throw $e;
+        }
 
         $rawState = strtoupper((string) ($result['state'] ?? ''));
         $newState = $rawState === 'SUCCESS' ? VerificationState::Success : VerificationState::Failed;

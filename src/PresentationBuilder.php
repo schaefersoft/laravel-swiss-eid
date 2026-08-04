@@ -19,7 +19,8 @@ class PresentationBuilder
     /** SD-JWT VC credential format (OID4VP 1.0 / SD-JWT VC draft >= 06). */
     private const FORMAT = 'dc+sd-jwt';
 
-    private string $credentialType;
+    /** @var list<string> */
+    private array $credentialTypes;
 
     /**
      * Requested claims as DCQL path-segment arrays, e.g. ['given_name'] or
@@ -32,11 +33,20 @@ class PresentationBuilder
     /** @var list<string> */
     private array $acceptedIssuers = [];
 
+    /** @var list<array{did: string, trust_registry_uri: string}> */
+    private array $trustAnchors = [];
+
+    /** @var array<string, mixed>|null */
+    private ?array $verificationPurpose = null;
+
     private string $responseMode;
 
-    public function __construct(string $credentialType, string $responseMode = 'direct_post')
+    /**
+     * @param  string|list<string>  $credentialType  One or more vct values; a string may be comma-separated.
+     */
+    public function __construct(string|array $credentialType, string $responseMode = 'direct_post.jwt')
     {
-        $this->credentialType = $credentialType;
+        $this->credentialTypes = $this->normaliseTypes($credentialType);
         $this->responseMode = $responseMode;
     }
 
@@ -57,11 +67,13 @@ class PresentationBuilder
     }
 
     /**
-     * Change the credential type (vct).
+     * Change the credential type(s) (vct).
+     *
+     * @param  string|list<string>  $vct
      */
-    public function setCredentialType(string $vct): self
+    public function setCredentialType(string|array $vct): self
     {
-        $this->credentialType = $vct;
+        $this->credentialTypes = $this->normaliseTypes($vct);
 
         return $this;
     }
@@ -74,6 +86,31 @@ class PresentationBuilder
     public function setAcceptedIssuers(array $dids): self
     {
         $this->acceptedIssuers = $dids;
+
+        return $this;
+    }
+
+    /**
+     * Set trust anchors as an alternative to listing every accepted issuer DID.
+     *
+     * @param  list<array{did: string, trust_registry_uri: string}>  $anchors
+     */
+    public function setTrustAnchors(array $anchors): self
+    {
+        $this->trustAnchors = $anchors;
+
+        return $this;
+    }
+
+    /**
+     * Set the vqPS transparency metadata registered at the trust infrastructure:
+     * ['scope' => ..., 'purpose_name' => [...], 'purpose_description' => [...]].
+     *
+     * @param  array<string, mixed>|null  $purpose
+     */
+    public function setVerificationPurpose(?array $purpose): self
+    {
+        $this->verificationPurpose = $purpose;
 
         return $this;
     }
@@ -115,7 +152,7 @@ class PresentationBuilder
             'id' => self::CREDENTIAL_ID,
             'format' => self::FORMAT,
             'meta' => [
-                'vct_values' => [$this->credentialType],
+                'vct_values' => $this->credentialTypes,
             ],
         ];
 
@@ -128,13 +165,37 @@ class PresentationBuilder
             );
         }
 
-        return [
+        $payload = [
             'accepted_issuer_dids' => $this->acceptedIssuers,
             'response_mode' => $this->responseMode,
             'dcql_query' => [
                 'credentials' => [$credential],
             ],
         ];
+
+        if ($this->trustAnchors !== []) {
+            $payload['trust_anchors'] = $this->trustAnchors;
+        }
+
+        if ($this->verificationPurpose !== null) {
+            $payload['verification_purpose'] = $this->verificationPurpose;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param  string|list<string>  $vct
+     * @return list<string>
+     */
+    private function normaliseTypes(string|array $vct): array
+    {
+        $values = is_string($vct) ? explode(',', $vct) : $vct;
+
+        return array_values(array_filter(
+            array_map(static fn ($value): string => trim((string) $value), $values),
+            static fn (string $value): bool => $value !== '',
+        ));
     }
 
     /**
