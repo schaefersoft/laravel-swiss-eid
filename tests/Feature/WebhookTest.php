@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
 use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
+use SwissEid\LaravelSwissEid\Events\VerificationExpired;
 use SwissEid\LaravelSwissEid\Events\VerificationFailed;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 
@@ -119,6 +120,27 @@ it('persists the error code and description from a failed verification', functio
     expect($verification->toResult()->wasRejectedByUser())->toBeTrue();
 
     Event::assertDispatched(VerificationFailed::class);
+});
+
+it('marks the verification expired when the verifier no longer knows it', function (): void {
+    Event::fake([VerificationExpired::class]);
+
+    $verification = createVerificationRecord('verifier-expired-01');
+
+    Http::fake([
+        'localhost:8083/management/api/verifications/verifier-expired-01' => Http::response(['detail' => 'expired'], 404),
+    ]);
+
+    $this->postJson('/swiss-eid/webhook', [
+        'verification_id' => 'verifier-expired-01',
+    ], ['X-Verifier-Api-Key' => 'test-secret'])
+        ->assertOk()
+        ->assertJson(['status' => 'ok']);
+
+    $verification->refresh();
+    expect($verification->state)->toBe(VerificationState::Expired);
+
+    Event::assertDispatched(VerificationExpired::class);
 });
 
 it('acknowledges webhooks for unknown verification ids with 200 to stop retries', function (): void {
