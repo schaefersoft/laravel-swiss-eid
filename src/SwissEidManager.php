@@ -107,6 +107,24 @@ class SwissEidManager
     }
 
     /**
+     * Set the verification purpose (vqPS) registered at the trust infrastructure.
+     * Strings are wrapped as the 'default' localization.
+     *
+     * @param  string|array<string, string>  $name
+     * @param  string|array<string, string>  $description
+     */
+    public function purpose(string $scope, string|array $name, string|array $description): static
+    {
+        $this->builder->setVerificationPurpose([
+            'scope' => $scope,
+            'purpose_name' => is_string($name) ? ['default' => $name] : $name,
+            'purpose_description' => is_string($description) ? ['default' => $description] : $description,
+        ]);
+
+        return $this;
+    }
+
+    /**
      * Override the response mode (e.g. 'direct_post.jwt' for encrypted wallet responses).
      */
     public function responseMode(string $mode): static
@@ -236,6 +254,12 @@ class SwissEidManager
 
         if ($issuers !== []) {
             $builder->setAcceptedIssuers($issuers);
+        }
+
+        $purpose = $this->config['verification_purpose'] ?? null;
+
+        if (is_array($purpose) && $purpose !== []) {
+            $builder->setVerificationPurpose($purpose);
         }
 
         return $builder;

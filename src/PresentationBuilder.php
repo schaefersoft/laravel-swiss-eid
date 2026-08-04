@@ -33,6 +33,9 @@ class PresentationBuilder
     /** @var list<string> */
     private array $acceptedIssuers = [];
 
+    /** @var array<string, mixed>|null */
+    private ?array $verificationPurpose = null;
+
     private string $responseMode;
 
     /**
@@ -80,6 +83,19 @@ class PresentationBuilder
     public function setAcceptedIssuers(array $dids): self
     {
         $this->acceptedIssuers = $dids;
+
+        return $this;
+    }
+
+    /**
+     * Set the vqPS transparency metadata registered at the trust infrastructure:
+     * ['scope' => ..., 'purpose_name' => [...], 'purpose_description' => [...]].
+     *
+     * @param  array<string, mixed>|null  $purpose
+     */
+    public function setVerificationPurpose(?array $purpose): self
+    {
+        $this->verificationPurpose = $purpose;
 
         return $this;
     }
@@ -134,13 +150,19 @@ class PresentationBuilder
             );
         }
 
-        return [
+        $payload = [
             'accepted_issuer_dids' => $this->acceptedIssuers,
             'response_mode' => $this->responseMode,
             'dcql_query' => [
                 'credentials' => [$credential],
             ],
         ];
+
+        if ($this->verificationPurpose !== null) {
+            $payload['verification_purpose'] = $this->verificationPurpose;
+        }
+
+        return $payload;
     }
 
     /**

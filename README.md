@@ -419,6 +419,27 @@ SwissEid::verify()
     ->create();
 ```
 
+### Verification purpose (vqPS)
+
+The productive e-ID requires verifiers to register their data queries and
+purpose at the trust infrastructure. Set it globally via the
+`verification_purpose` config key or per request:
+
+```php
+SwissEid::verify()
+    ->ageOver18()
+    ->purpose('com.example.age_check', 'Age verification', 'Required for checkout')
+    ->create();
+
+// Localized variants take arrays instead of strings:
+SwissEid::verify()
+    ->purpose('com.example.age_check',
+        ['default' => 'Age verification', 'de-ch' => 'Altersverifikation'],
+        ['default' => 'Required for checkout'])
+    ->ageOver18()
+    ->create();
+```
+
 ### Presenting to the user
 
 The package is UI-agnostic. Render the primitives in any frontend:

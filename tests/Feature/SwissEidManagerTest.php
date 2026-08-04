@@ -192,6 +192,31 @@ it('sends direct_post.jwt response mode when configured', function (): void {
     });
 });
 
+it('sends the verification purpose with strings wrapped as default localization', function (): void {
+    Http::fake([
+        'localhost:8083/*' => Http::response([
+            'id' => 'remote-purpose',
+            'deeplink' => 'openid-vc://start',
+            'verificationUrl' => 'http://localhost:8083/verify/purpose',
+        ], 200),
+    ]);
+
+    SwissEid::verify()
+        ->ageOver18()
+        ->purpose('com.example.age_check', 'Age verification', 'Required for checkout')
+        ->create();
+
+    Http::assertSent(function ($request) {
+        $body = $request->data();
+
+        return ($body['verification_purpose'] ?? null) === [
+            'scope' => 'com.example.age_check',
+            'purpose_name' => ['default' => 'Age verification'],
+            'purpose_description' => ['default' => 'Required for checkout'],
+        ];
+    });
+});
+
 it('throws when fetching an unknown verification id', function (): void {
     SwissEid::getVerification(verifierIdOrModelId: 'totally-missing');
 })->throws(VerificationNotFoundException::class);

@@ -56,6 +56,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Verification Purpose (vqPS)
+    |--------------------------------------------------------------------------
+    |
+    | Optional transparency metadata sent with each verification request and
+    | registered at the trust infrastructure. Required for the productive
+    | e-ID, where verifiers must register their data queries and purpose.
+    | Structure: ['scope' => 'com.example.age_check',
+    |             'purpose_name' => ['default' => 'Age verification'],
+    |             'purpose_description' => ['default' => '...']]
+    |
+    */
+    'verification_purpose' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | OAuth2 Authentication
     |--------------------------------------------------------------------------
     |

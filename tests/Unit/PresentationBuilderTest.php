@@ -90,6 +90,20 @@ it('omits the claims key when no fields are requested', function (): void {
     expect($result['dcql_query']['credentials'][0])->not->toHaveKey('claims');
 });
 
+it('includes verification_purpose only when set', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+
+    expect($builder->build())->not->toHaveKey('verification_purpose');
+
+    $purpose = [
+        'scope' => 'com.example.age_check',
+        'purpose_name' => ['default' => 'Age verification'],
+        'purpose_description' => ['default' => 'Required for checkout'],
+    ];
+
+    expect($builder->setVerificationPurpose($purpose)->build()['verification_purpose'])->toBe($purpose);
+});
+
 it('sets accepted issuer dids', function (): void {
     $dids = ['did:example:123', 'did:example:456'];
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
