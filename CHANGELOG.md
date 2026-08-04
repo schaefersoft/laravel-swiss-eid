@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.4.2...v0.5.0) (2026-08-04)
+
+
+### Features
+
+* add trust_anchors as alternative to accepted issuer DIDs ([13c9072](https://github.com/schaefersoft/laravel-swiss-eid/commit/13c907284e6fc852a66824858833a1f8b291e357))
+* add verification_purpose support for vqPS registration ([bc63d09](https://github.com/schaefersoft/laravel-swiss-eid/commit/bc63d095412304d3196dc4e2b03f1ab716aa23b3))
+* check minimum swiyu-verifier version 4.1.2 in doctor command ([228100d](https://github.com/schaefersoft/laravel-swiss-eid/commit/228100d3e619a521e8d4008ca61018fa9fcbf185))
+* support multiple vct values for the requested credential type ([7ab8b5b](https://github.com/schaefersoft/laravel-swiss-eid/commit/7ab8b5b9c64c09c677180164d50a5510a63d6502))
+* warn on deprecated did:tdw issuers and document did:webvh onboarding ([1419d68](https://github.com/schaefersoft/laravel-swiss-eid/commit/1419d68aa9c1bea9678586726576d26cd704d664))
+
+
+### Bug Fixes
+
+* default response_mode to direct_post.jwt as enforced by wallets since CD-004 ([f0a781f](https://github.com/schaefersoft/laravel-swiss-eid/commit/f0a781f4cba1656ab54ec8c2d007391fd501a5c1))
+* mark verification expired when verifier returns 404 on result fetch ([7e152eb](https://github.com/schaefersoft/laravel-swiss-eid/commit/7e152eb0d628ab8a60e40c4450372b11dc0aa205))
+
 ## [0.4.2](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.4.1...v0.4.2) (2026-08-04)
 
 
