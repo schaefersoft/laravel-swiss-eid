@@ -34,7 +34,7 @@ class PresentationBuilder
 
     private string $responseMode;
 
-    public function __construct(string $credentialType, string $responseMode = 'direct_post')
+    public function __construct(string $credentialType, string $responseMode = 'direct_post.jwt')
     {
         $this->credentialType = $credentialType;
         $this->responseMode = $responseMode;

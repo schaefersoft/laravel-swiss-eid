@@ -9,7 +9,7 @@ beforeEach(function (): void {
     config([
         'swiss-eid.verifier.base_url' => 'http://localhost:8083',
         'swiss-eid.verifier.timeout' => 10,
-        'swiss-eid.verifier.response_mode' => 'direct_post',
+        'swiss-eid.verifier.response_mode' => 'direct_post.jwt',
         'swiss-eid.webhook.path' => '/swiss-eid/webhook',
         'swiss-eid.webhook.api_key_header' => 'X-Verifier-Api-Key',
         'swiss-eid.webhook.api_key' => str_repeat('a', 32),

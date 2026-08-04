@@ -10,7 +10,7 @@ it('builds a DCQL query with the vct in meta.vct_values', function (): void {
 
     expect($result)
         ->toHaveKey('dcql_query')
-        ->toHaveKey('response_mode', 'direct_post');
+        ->toHaveKey('response_mode', 'direct_post.jwt');
 
     $credential = $result['dcql_query']['credentials'][0];
 
@@ -89,24 +89,24 @@ it('sets accepted issuer dids', function (): void {
     expect($result['accepted_issuer_dids'])->toBe($dids);
 });
 
-it('uses direct_post response mode by default', function (): void {
+it('uses direct_post.jwt response mode by default', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $result = $builder->build();
+
+    expect($result['response_mode'])->toBe('direct_post.jwt');
+});
+
+it('allows overriding response mode to direct_post', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+    $builder->setResponseMode('direct_post');
     $result = $builder->build();
 
     expect($result['response_mode'])->toBe('direct_post');
 });
 
-it('allows overriding response mode to direct_post.jwt', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
-    $builder->setResponseMode('direct_post.jwt');
-    $result = $builder->build();
-
-    expect($result['response_mode'])->toBe('direct_post.jwt');
-});
-
 it('accepts response mode via constructor', function (): void {
-    $builder = new PresentationBuilder(credentialType: 'test-sdjwt', responseMode: 'direct_post.jwt');
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt', responseMode: 'direct_post');
     $result = $builder->build();
 
-    expect($result['response_mode'])->toBe('direct_post.jwt');
+    expect($result['response_mode'])->toBe('direct_post');
 });

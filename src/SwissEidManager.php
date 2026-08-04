@@ -224,7 +224,7 @@ class SwissEidManager
     {
         $builder = new PresentationBuilder(
             credentialType: (string) ($this->config['credentials']['type'] ?? ''),
-            responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post'),
+            responseMode: (string) ($this->config['verifier']['response_mode'] ?? 'direct_post.jwt'),
         );
 
         $issuers = array_values(array_filter(

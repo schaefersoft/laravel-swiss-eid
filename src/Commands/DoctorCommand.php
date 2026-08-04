@@ -60,6 +60,8 @@ class DoctorCommand extends Command
         $validModes = ['direct_post', 'direct_post.jwt'];
         if (! in_array($mode, $validModes, true)) {
             $this->checkFail('SWISS_EID_RESPONSE_MODE must be one of ['.implode(', ', $validModes)."], got: {$mode}");
+        } elseif ($mode === 'direct_post') {
+            $this->checkWarn('SWISS_EID_RESPONSE_MODE is direct_post — swiyu wallets enforce encrypted responses (direct_post.jwt) since 2026-08-17 (CD-004)');
         } else {
             $this->checkOk("Response mode: {$mode}");
         }
