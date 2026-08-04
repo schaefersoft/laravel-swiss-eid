@@ -33,6 +33,9 @@ class PresentationBuilder
     /** @var list<string> */
     private array $acceptedIssuers = [];
 
+    /** @var list<array{did: string, trust_registry_uri: string}> */
+    private array $trustAnchors = [];
+
     /** @var array<string, mixed>|null */
     private ?array $verificationPurpose = null;
 
@@ -83,6 +86,18 @@ class PresentationBuilder
     public function setAcceptedIssuers(array $dids): self
     {
         $this->acceptedIssuers = $dids;
+
+        return $this;
+    }
+
+    /**
+     * Set trust anchors as an alternative to listing every accepted issuer DID.
+     *
+     * @param  list<array{did: string, trust_registry_uri: string}>  $anchors
+     */
+    public function setTrustAnchors(array $anchors): self
+    {
+        $this->trustAnchors = $anchors;
 
         return $this;
     }
@@ -157,6 +172,10 @@ class PresentationBuilder
                 'credentials' => [$credential],
             ],
         ];
+
+        if ($this->trustAnchors !== []) {
+            $payload['trust_anchors'] = $this->trustAnchors;
+        }
 
         if ($this->verificationPurpose !== null) {
             $payload['verification_purpose'] = $this->verificationPurpose;

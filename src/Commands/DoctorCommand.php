@@ -136,10 +136,27 @@ class DoctorCommand extends Command
         }
 
         $issuers = config('swiss-eid.credentials.accepted_issuers', []);
-        if (empty($issuers)) {
-            $this->checkFail('SWISS_EID_ACCEPTED_ISSUERS is not set — no issuers will be accepted');
-        } else {
+        $anchors = config('swiss-eid.credentials.trust_anchors', []);
+
+        if (empty($issuers) && empty($anchors)) {
+            $this->checkFail('SWISS_EID_ACCEPTED_ISSUERS is not set and no trust_anchors configured — the verifier rejects requests without at least one');
+
+            return;
+        }
+
+        if (! empty($issuers)) {
             $this->checkOk(count($issuers).' accepted issuer(s) configured');
+        }
+
+        foreach ((array) $anchors as $anchor) {
+            $did = (string) ($anchor['did'] ?? '');
+            $uri = (string) ($anchor['trust_registry_uri'] ?? '');
+
+            if ($did === '' || ! str_starts_with($uri, 'https://')) {
+                $this->checkFail('Each trust anchor needs a did and an https trust_registry_uri');
+            } else {
+                $this->checkOk("Trust anchor: {$did}");
+            }
         }
     }
 

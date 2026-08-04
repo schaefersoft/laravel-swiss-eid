@@ -281,6 +281,32 @@ If you do not know the issuer DID of a credential, you can extract it from a
 decoded SD-JWT (the `iss` field) or from the verifier logs when it rejects a
 presentation with `issuer_not_accepted`.
 
+Alternatively (or additionally) configure **trust anchors** — every DID with a
+trust statement from the anchor is accepted, without listing each issuer. The
+verifier requires at least one of the two to be non-empty:
+
+```php
+// config/swiss-eid.php
+'credentials' => [
+    'trust_anchors' => [
+        [
+            'did' => 'did:webvh:...anchor-did...',
+            'trust_registry_uri' => 'https://trust-reg.trust-infra.swiyu-int.admin.ch',
+        ],
+    ],
+],
+```
+
+```php
+// Or per request:
+SwissEid::verify()
+    ->trustAnchors([
+        ['did' => 'did:webvh:...', 'trust_registry_uri' => 'https://trust-reg.trust-infra.swiyu-int.admin.ch'],
+    ])
+    ->ageOver18()
+    ->create();
+```
+
 ### 6. Swiss wallet app (for testing)
 
 To actually scan a QR code and complete a verification end-to-end you need the

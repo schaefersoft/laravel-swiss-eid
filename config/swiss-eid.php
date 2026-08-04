@@ -50,6 +50,15 @@ return [
     'credentials' => [
         'type' => env('SWISS_EID_CREDENTIAL_TYPE'),
         'accepted_issuers' => array_filter(explode(',', (string) env('SWISS_EID_ACCEPTED_ISSUERS', ''))),
+
+        /*
+         * Alternative to accepted_issuers: every DID with a trust statement
+         * from an anchor is accepted. The verifier requires at least one of
+         * the two to be non-empty. Entries:
+         * ['did' => 'did:webvh:...', 'trust_registry_uri' => 'https://...']
+         */
+        'trust_anchors' => [],
+
         'sd_jwt_alg' => 'ES256',
         'kb_jwt_alg' => 'ES256',
     ],

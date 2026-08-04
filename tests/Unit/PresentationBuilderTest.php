@@ -90,6 +90,16 @@ it('omits the claims key when no fields are requested', function (): void {
     expect($result['dcql_query']['credentials'][0])->not->toHaveKey('claims');
 });
 
+it('includes trust_anchors only when set', function (): void {
+    $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
+
+    expect($builder->build())->not->toHaveKey('trust_anchors');
+
+    $anchors = [['did' => 'did:webvh:QmAnchor:example.com', 'trust_registry_uri' => 'https://trust-reg.example.com']];
+
+    expect($builder->setTrustAnchors($anchors)->build()['trust_anchors'])->toBe($anchors);
+});
+
 it('includes verification_purpose only when set', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');
 

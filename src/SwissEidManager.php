@@ -147,6 +147,18 @@ class SwissEidManager
     }
 
     /**
+     * Override the trust anchors accepted for this verification.
+     *
+     * @param  list<array{did: string, trust_registry_uri: string}>  $anchors
+     */
+    public function trustAnchors(array $anchors): static
+    {
+        $this->builder->setTrustAnchors($anchors);
+
+        return $this;
+    }
+
+    /**
      * Associate the resulting verification with a user ID.
      */
     public function forUser(int|string $userId): static
@@ -254,6 +266,16 @@ class SwissEidManager
 
         if ($issuers !== []) {
             $builder->setAcceptedIssuers($issuers);
+        }
+
+        /** @var list<array{did: string, trust_registry_uri: string}> $anchors */
+        $anchors = array_values(array_filter(
+            (array) ($this->config['credentials']['trust_anchors'] ?? []),
+            static fn ($anchor) => is_array($anchor) && $anchor !== [],
+        ));
+
+        if ($anchors !== []) {
+            $builder->setTrustAnchors($anchors);
         }
 
         $purpose = $this->config['verification_purpose'] ?? null;

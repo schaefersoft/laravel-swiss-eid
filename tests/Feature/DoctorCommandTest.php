@@ -118,6 +118,32 @@ it('fails when accepted issuers list is empty', function (): void {
         ->assertExitCode(1);
 });
 
+it('accepts trust anchors as alternative to accepted issuers', function (): void {
+    Http::fake();
+    config([
+        'swiss-eid.credentials.accepted_issuers' => [],
+        'swiss-eid.credentials.trust_anchors' => [
+            ['did' => 'did:webvh:QmAnchor:example.com', 'trust_registry_uri' => 'https://trust-reg.example.com'],
+        ],
+    ]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('Trust anchor: did:webvh:QmAnchor:example.com')
+        ->assertExitCode(0);
+});
+
+it('fails when a trust anchor is missing an https registry uri', function (): void {
+    config([
+        'swiss-eid.credentials.trust_anchors' => [
+            ['did' => 'did:webvh:QmAnchor:example.com', 'trust_registry_uri' => 'http://insecure.example.com'],
+        ],
+    ]);
+
+    $this->artisan('swiss-eid:doctor')
+        ->expectsOutputToContain('https trust_registry_uri')
+        ->assertExitCode(1);
+});
+
 // ── OAuth2 ────────────────────────────────────────────────────────────────────
 
 it('validates oauth2 sub-config when auth is enabled', function (): void {
