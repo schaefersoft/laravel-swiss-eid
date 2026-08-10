@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.5.0...v0.5.1) (2026-08-10)
+
+
+### Miscellaneous Chores
+
+* replace abandoned nunomaduro/larastan with larastan/larastan ([eaed598](https://github.com/schaefersoft/laravel-swiss-eid/commit/eaed5989313d12ed0136c95900d879127ad33e24))
+* replace abandoned nunomaduro/larastan with larastan/larastan ([08011a7](https://github.com/schaefersoft/laravel-swiss-eid/commit/08011a7732772cdd771b44a29cd5abee3dbf8da1))
+
 ## [0.5.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.4.2...v0.5.0) (2026-08-04)
 
 
