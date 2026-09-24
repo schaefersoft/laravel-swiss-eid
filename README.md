@@ -600,6 +600,21 @@ if ($result->isSuccessful()) {
 
 If the ID is not found a `VerificationNotFoundException` is thrown.
 
+### Refreshing without the webhook
+
+`getVerification()` only reads your database. If the webhook cannot reach your
+app (local development, firewall, lost retry), pull the state from the
+verifier instead:
+
+```php
+$result = SwissEid::refresh($pending->id); // or the verifier ID
+```
+
+`refresh()` updates the record and dispatches the same events as the webhook.
+Terminal verifications are returned without contacting the verifier. To
+refresh all pending verifications at once, run or schedule
+`php artisan swiss-eid:refresh`.
+
 ### Events
 
 Listen in your `EventServiceProvider` or with `#[AsEventListener]`:
@@ -662,6 +677,7 @@ single-line change.
 | `swiss-eid:test-connection` | Probe the verifier to confirm it is reachable and responding. |
 | `swiss-eid:cleanup --days=7` | Delete expired records older than N days. Accepts `--dry-run`. |
 | `swiss-eid:expire` | Mark pending verifications past their TTL as expired and dispatch `VerificationExpired`. Schedule it so the event fires without relying on status polling. |
+| `swiss-eid:refresh {id?}` | Pull the current state of one or all pending verifications from the verifier. Fallback when the webhook does not reach your app. |
 | `swiss-eid:doctor` | Validate the full configuration, check DID formats, and probe the webhook URL. |
 
 Schedule the cleanup in `App\Console\Kernel` (or `routes/console.php` on

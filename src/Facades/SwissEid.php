@@ -24,6 +24,7 @@ use SwissEid\LaravelSwissEid\SwissEidManager;
  * @method static SwissEidManager metadata(array<string, mixed> $data)
  * @method static PendingVerification create()
  * @method static VerificationResult getVerification(string $id)
+ * @method static VerificationResult refresh(string $id)
  * @method static SwissEidFake fake(array<string, mixed> $responses = [])
  * @method static void assertVerificationStarted()
  * @method static void assertVerificationCompleted(?callable $callback = null)

@@ -7,18 +7,13 @@ namespace SwissEid\LaravelSwissEid\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
-use SwissEid\LaravelSwissEid\Events\VerificationExpired;
-use SwissEid\LaravelSwissEid\Events\VerificationFailed;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
-use SwissEid\LaravelSwissEid\VerifierClient;
+use SwissEid\LaravelSwissEid\VerificationSynchronizer;
 
 class WebhookController extends Controller
 {
     public function __construct(
-        private readonly VerifierClient $client,
+        private readonly VerificationSynchronizer $synchronizer,
     ) {}
 
     /**
@@ -50,63 +45,12 @@ class WebhookController extends Controller
             return response()->json(['status' => 'ok']);
         }
 
-        // Fetch the full result from the verifier. Since verifier 4.0.0 an
-        // expired verification returns 404 instead of the object.
-        try {
-            $result = $this->client->getVerification($verificationId);
-        } catch (SwissEidException $e) {
-            if ($e->getCode() === 404) {
-                $verification->update([
-                    'state' => VerificationState::Expired,
-                    'webhook_received_at' => now(),
-                ]);
-                event(new VerificationExpired($verification->refresh()));
-
-                return response()->json(['status' => 'ok']);
-            }
-
-            throw $e;
-        }
-
-        $rawState = strtoupper((string) ($result['state'] ?? ''));
-        $newState = match ($rawState) {
-            'SUCCESS' => VerificationState::Success,
-            'FAILED' => VerificationState::Failed,
-            default => null,
-        };
-
-        if ($newState === null) {
-            if ($rawState !== 'PENDING') {
-                \Log::warning('swiss-eid webhook with unknown verifier state', [
-                    'verification_id' => $verificationId,
-                    'state' => $rawState,
-                ]);
-            }
-
-            return response()->json(['status' => 'ignored']);
-        }
-
-        $credentialData = $result['wallet_response']['credential_subject_data'] ?? null;
-        $errorCode = $result['wallet_response']['error_code'] ?? null;
-        $errorDescription = $result['wallet_response']['error_description'] ?? null;
-
-        $verification->update([
-            'state' => $newState,
-            'credential_data' => $credentialData,
-            'error_code' => $errorCode,
-            'error_description' => $errorDescription,
+        $verification = $this->synchronizer->sync($verification, [
             'webhook_received_at' => now(),
         ]);
 
-        // Reload to get cast values applied
-        $verification->refresh();
-
-        match ($verification->state) {
-            VerificationState::Success => event(new VerificationCompleted($verification)),
-            VerificationState::Failed => event(new VerificationFailed($verification)),
-            default => null,
-        };
-
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => $verification->state->isTerminal() ? 'ok' : 'ignored',
+        ]);
     }
 }

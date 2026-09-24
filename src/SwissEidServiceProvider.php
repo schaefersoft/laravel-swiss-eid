@@ -9,6 +9,7 @@ use SwissEid\LaravelSwissEid\Commands\CleanupCommand;
 use SwissEid\LaravelSwissEid\Commands\DoctorCommand;
 use SwissEid\LaravelSwissEid\Commands\ExpireVerificationsCommand;
 use SwissEid\LaravelSwissEid\Commands\InstallCommand;
+use SwissEid\LaravelSwissEid\Commands\RefreshVerificationsCommand;
 use SwissEid\LaravelSwissEid\Commands\TestConnectionCommand;
 
 class SwissEidServiceProvider extends ServiceProvider
@@ -58,6 +59,7 @@ class SwissEidServiceProvider extends ServiceProvider
                 TestConnectionCommand::class,
                 CleanupCommand::class,
                 ExpireVerificationsCommand::class,
+                RefreshVerificationsCommand::class,
                 DoctorCommand::class,
             ]);
         }
