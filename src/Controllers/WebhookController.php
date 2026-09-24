@@ -71,7 +71,23 @@ class WebhookController extends Controller
         }
 
         $rawState = strtoupper((string) ($result['state'] ?? ''));
-        $newState = $rawState === 'SUCCESS' ? VerificationState::Success : VerificationState::Failed;
+        $newState = match ($rawState) {
+            'SUCCESS' => VerificationState::Success,
+            'FAILED' => VerificationState::Failed,
+            default => null,
+        };
+
+        if ($newState === null) {
+            if ($rawState !== 'PENDING') {
+                \Log::warning('swiss-eid webhook with unknown verifier state', [
+                    'verification_id' => $verificationId,
+                    'state' => $rawState,
+                ]);
+            }
+
+            return response()->json(['status' => 'ignored']);
+        }
+
         $credentialData = $result['wallet_response']['credential_subject_data'] ?? null;
         $errorCode = $result['wallet_response']['error_code'] ?? null;
         $errorDescription = $result['wallet_response']['error_description'] ?? null;
