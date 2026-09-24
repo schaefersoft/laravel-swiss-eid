@@ -67,6 +67,14 @@ class PresentationBuilder
     }
 
     /**
+     * @return list<string>
+     */
+    public function getCredentialTypes(): array
+    {
+        return $this->credentialTypes;
+    }
+
+    /**
      * Change the credential type(s) (vct).
      *
      * @param  string|list<string>  $vct

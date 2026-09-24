@@ -106,6 +106,9 @@ return [
     'polling' => [
         'enabled' => env('SWISS_EID_POLLING_ENABLED', true),
         'route_path' => env('SWISS_EID_POLLING_PATH', '/swiss-eid/status'),
+
+        /** Laravel throttle definition: "max_attempts,decay_minutes". */
+        'rate_limit' => env('SWISS_EID_POLLING_RATE_LIMIT', '60,1'),
     ],
 
     /*

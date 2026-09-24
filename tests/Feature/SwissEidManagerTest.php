@@ -9,6 +9,7 @@ use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
 use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
 use SwissEid\LaravelSwissEid\Enums\CredentialField;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
+use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
 use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
 use SwissEid\LaravelSwissEid\Facades\SwissEid;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
@@ -220,3 +221,48 @@ it('sends the verification purpose with strings wrapped as default localization'
 it('throws when fetching an unknown verification id', function (): void {
     SwissEid::getVerification(verifierIdOrModelId: 'totally-missing');
 })->throws(VerificationNotFoundException::class);
+
+it('uses the per-request credential type when none is configured', function (): void {
+    config()->set('swiss-eid.credentials.type', null);
+
+    Http::fake([
+        'localhost:8083/*' => Http::response([
+            'id' => 'remote-override-type',
+            'deeplink' => 'openid-vc://start',
+            'verificationUrl' => 'http://localhost:8083/verify/override',
+        ], 200),
+    ]);
+
+    SwissEid::verify()
+        ->ageOver18()
+        ->credentialType(['betaid-sdjwt', 'urn:vct:ch.admin.bcs.betaid'])
+        ->create();
+
+    $this->assertDatabaseHas(config('swiss-eid.table_name'), [
+        'verifier_id' => 'remote-override-type',
+        'credential_type' => 'betaid-sdjwt,urn:vct:ch.admin.bcs.betaid',
+    ]);
+});
+
+it('throws when no credential type is configured or overridden', function (): void {
+    config()->set('swiss-eid.credentials.type', null);
+
+    SwissEid::verify()->ageOver18()->create();
+})->throws(SwissEidException::class);
+
+it('resets builder state after create', function (): void {
+    Http::fake([
+        'localhost:8083/*' => Http::sequence()
+            ->push(['id' => 'remote-first', 'deeplink' => 'openid-vc://start'], 200)
+            ->push(['id' => 'remote-second', 'deeplink' => 'openid-vc://start'], 200),
+    ]);
+
+    SwissEid::ageOver18()->forUser(7)->metadata(['order' => 1])->create();
+    SwissEid::field('given_name')->create();
+
+    $second = EidVerification::where('verifier_id', 'remote-second')->firstOrFail();
+
+    expect($second->user_id)->toBeNull();
+    expect($second->metadata)->toBeNull();
+    expect($second->requested_fields)->toBe([['path' => ['given_name']]]);
+});

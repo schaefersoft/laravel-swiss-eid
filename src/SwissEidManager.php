@@ -192,41 +192,11 @@ class SwissEidManager
      */
     public function create(): PendingVerification
     {
-        $credentialType = (string) ($this->config['credentials']['type'] ?? '');
-
-        if ($credentialType === '') {
-            throw new SwissEidException(
-                'No credential type configured. Set the SWISS_EID_CREDENTIAL_TYPE environment variable.',
-            );
+        try {
+            return $this->send();
+        } finally {
+            $this->verify();
         }
-
-        $payload = $this->builder->build();
-        $response = $this->client->createVerification($payload);
-
-        $ttl = (int) ($this->config['verification_ttl'] ?? 300);
-        $localId = Str::uuid()->toString();
-
-        $verification = EidVerification::create([
-            'id' => $localId,
-            'verifier_id' => $response['id'] ?? $response['verificationId'] ?? '',
-            'user_id' => $this->userId,
-            'state' => VerificationState::Pending,
-            'credential_type' => $this->config['credentials']['type'],
-            'requested_fields' => $payload['dcql_query']['credentials'][0]['claims'] ?? [],
-            'metadata' => $this->metadata ?: null,
-            'deeplink' => $response['verification_deeplink'] ?? $response['deeplink'] ?? $response['verification_url'] ?? $response['verificationUrl'] ?? '',
-            'verification_url' => $response['verification_url'] ?? $response['verificationUrl'] ?? $response['verification_deeplink'] ?? $response['deeplink'] ?? '',
-            'expires_at' => Carbon::now()->addSeconds($ttl),
-        ]);
-
-        return new PendingVerification(
-            id: $verification->id,
-            verifierId: $verification->verifier_id,
-            deeplink: (string) $verification->deeplink,
-            verificationUrl: (string) $verification->verification_url,
-            state: $verification->state->value,
-            expiresAt: $verification->expires_at,
-        );
     }
 
     /**
@@ -251,6 +221,49 @@ class SwissEidManager
     // -------------------------------------------------------------------------
     // Internal
     // -------------------------------------------------------------------------
+
+    /**
+     * @throws SwissEidException
+     * @throws VerifierConnectionException
+     */
+    private function send(): PendingVerification
+    {
+        $credentialTypes = $this->builder->getCredentialTypes();
+
+        if ($credentialTypes === []) {
+            throw new SwissEidException(
+                'No credential type configured. Set the SWISS_EID_CREDENTIAL_TYPE environment variable or call credentialType().',
+            );
+        }
+
+        $payload = $this->builder->build();
+        $response = $this->client->createVerification($payload);
+
+        $ttl = (int) ($this->config['verification_ttl'] ?? 300);
+        $localId = Str::uuid()->toString();
+
+        $verification = EidVerification::create([
+            'id' => $localId,
+            'verifier_id' => $response['id'] ?? $response['verificationId'] ?? '',
+            'user_id' => $this->userId,
+            'state' => VerificationState::Pending,
+            'credential_type' => implode(',', $credentialTypes),
+            'requested_fields' => $payload['dcql_query']['credentials'][0]['claims'] ?? [],
+            'metadata' => $this->metadata ?: null,
+            'deeplink' => $response['verification_deeplink'] ?? $response['deeplink'] ?? $response['verification_url'] ?? $response['verificationUrl'] ?? '',
+            'verification_url' => $response['verification_url'] ?? $response['verificationUrl'] ?? $response['verification_deeplink'] ?? $response['deeplink'] ?? '',
+            'expires_at' => Carbon::now()->addSeconds($ttl),
+        ]);
+
+        return new PendingVerification(
+            id: $verification->id,
+            verifierId: $verification->verifier_id,
+            deeplink: (string) $verification->deeplink,
+            verificationUrl: (string) $verification->verification_url,
+            state: $verification->state->value,
+            expiresAt: $verification->expires_at,
+        );
+    }
 
     private function newBuilder(): PresentationBuilder
     {

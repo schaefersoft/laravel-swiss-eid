@@ -172,3 +172,28 @@ it('is idempotent and ignores webhooks for already-terminal verifications', func
     Event::assertNotDispatched(VerificationFailed::class);
     Http::assertNothingSent();
 });
+
+it('keeps the verification pending when the verifier still reports pending', function (string $state): void {
+    Event::fake([VerificationCompleted::class, VerificationFailed::class]);
+
+    $verification = createVerificationRecord('verifier-pending-01');
+
+    Http::fake([
+        'localhost:8083/management/api/verifications/verifier-pending-01' => Http::response([
+            'state' => $state,
+        ], 200),
+    ]);
+
+    $this->postJson('/swiss-eid/webhook', [
+        'verification_id' => 'verifier-pending-01',
+    ], ['X-Verifier-Api-Key' => 'test-secret'])
+        ->assertOk()
+        ->assertJson(['status' => 'ignored']);
+
+    $verification->refresh();
+    expect($verification->state)->toBe(VerificationState::Pending);
+    expect($verification->webhook_received_at)->toBeNull();
+
+    Event::assertNotDispatched(VerificationCompleted::class);
+    Event::assertNotDispatched(VerificationFailed::class);
+})->with(['PENDING', 'SOMETHING_NEW', '']);
