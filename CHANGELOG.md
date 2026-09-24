@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.2](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.5.1...v0.5.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* honour per-request credential type and reset builder state after create ([fcf516a](https://github.com/schaefersoft/laravel-swiss-eid/commit/fcf516a3b13b185d03427e0f27f33245ce84a8ee))
+* ignore pending and unknown verifier states in webhook ([c32a4c0](https://github.com/schaefersoft/laravel-swiss-eid/commit/c32a4c023ba97c586c0325043851aff930a13086))
+* rate limit the status polling endpoint ([10a9342](https://github.com/schaefersoft/laravel-swiss-eid/commit/10a93426d27b03fd02f78a830b9bd8258213e33f))
+* stop logging full webhook payload ([36cf79e](https://github.com/schaefersoft/laravel-swiss-eid/commit/36cf79e61ca5c0b9e0212d63c450316ad8b005fd))
+
 ## [0.5.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.5.0...v0.5.1) (2026-08-10)
 
 
