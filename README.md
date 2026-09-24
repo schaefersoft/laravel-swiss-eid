@@ -87,13 +87,14 @@ Once the wallet has scanned the QR code the verifier fires the webhook. Listen
 to the event:
 
 ```php
+use App\Models\User;
 use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
 
 Event::listen(VerificationCompleted::class, function ($event) {
     $result = $event->verification->toResult();
 
     if ($result->isSuccessful() && $result->isAdult()) {
-        $user->update(['verified_at' => now()]);
+        User::find($event->verification->user_id)?->update(['verified_at' => now()]);
     }
 });
 ```
@@ -364,6 +365,7 @@ environment variables:
 | `SWISS_EID_VERIFICATION_TTL` | `300` | Seconds a pending verification stays valid before being marked `expired`. |
 | `SWISS_EID_POLLING_ENABLED` | `true` | Enable the built-in `/swiss-eid/status/{id}` JSON endpoint. |
 | `SWISS_EID_POLLING_PATH` | `/swiss-eid/status` | Route prefix of the polling endpoint. |
+| `SWISS_EID_POLLING_RATE_LIMIT` | `60,1` | Throttle for the polling endpoint (`max_attempts,decay_minutes`). |
 | `SWISS_EID_AUTH_ENABLED` | `false` | Enable OAuth2 client-credentials auth against the verifier's management API. |
 | `SWISS_EID_TOKEN_URL` | – | OAuth2 token endpoint (only if auth is enabled). |
 | `SWISS_EID_CLIENT_ID` | – | OAuth2 client ID (only if auth is enabled). |
@@ -426,11 +428,13 @@ Available cases: `AgeOver18`, `AgeOver16`, `GivenName`, `FamilyName`,
 `DateOfBirth` (resolves to the JSON key `birth_date`), `Nationality`,
 `PlaceOfBirth`, `Gender`.
 
-You can also pass a single field by name or full JSON path:
+You can also pass a single field by name, dotted path or legacy JSONPath. All
+forms are normalised to a DCQL claim path:
 
 ```php
-SwissEid::verify()->field('given_name');     // resolves to $.given_name
-SwissEid::verify()->field('$.custom_path');  // passed through verbatim
+SwissEid::verify()->field('given_name');        // ['given_name']
+SwissEid::verify()->field('$.custom_path');     // ['custom_path']
+SwissEid::verify()->field('address.street');    // ['address', 'street']
 ```
 
 ### Overriding credential type / accepted issuers per request
