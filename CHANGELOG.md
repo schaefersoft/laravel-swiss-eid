@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.6.0...v0.7.0) (2026-09-24)
+
+
+### Code Refactoring
+
+* rename namespace to SchaeferSoft\SwissEid ([b437f72](https://github.com/schaefersoft/laravel-swiss-eid/commit/b437f72ed0f27d99a653d87d229b329e742c75be))
+
 ## [0.6.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.5.2...v0.6.0) (2026-09-24)
 
 
