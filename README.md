@@ -393,6 +393,11 @@ $pending = SwissEid::verify()
     ->create();
 ```
 
+Every `SwissEid::verify()` call returns a new `VerificationRequest`, just like
+`Http::` returns a new pending request. Builder methods called directly on the
+facade (e.g. `SwissEid::ageOver18()`) start a new request as well, so no state
+leaks between requests, jobs or Octane workers.
+
 The returned `$pending` has:
 
 | Property / method | Description |

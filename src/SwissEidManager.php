@@ -8,195 +8,77 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
 use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
-use SwissEid\LaravelSwissEid\Enums\CredentialField;
 use SwissEid\LaravelSwissEid\Enums\VerificationState;
 use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
 use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
 use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 
+/**
+ * Calls to builder methods (e.g. ageOver18()) start a new VerificationRequest.
+ *
+ * @mixin VerificationRequest
+ */
 class SwissEidManager
 {
-    private PresentationBuilder $builder;
-
-    private int|string|null $userId = null;
-
-    /** @var array<string, mixed> */
-    private array $metadata = [];
-
     public function __construct(
         private readonly VerifierClient $client,
         /** @var array<string, mixed> */
         private readonly array $config,
-    ) {
-        $this->builder = $this->newBuilder();
-    }
-
-    // -------------------------------------------------------------------------
-    // Fluent builder API
-    // -------------------------------------------------------------------------
+    ) {}
 
     /**
-     * Start a new verification request. Resets all previously configured options.
+     * Start a new, independent verification request.
      */
-    public function verify(): static
+    public function verify(): VerificationRequest
     {
-        $this->builder = $this->newBuilder();
-        $this->userId = null;
-        $this->metadata = [];
-
-        return $this;
+        return new VerificationRequest($this, $this->newBuilder());
     }
 
     /**
-     * Request the age_over_18 claim.
-     */
-    public function ageOver18(): static
-    {
-        $this->builder->addAgeOver18();
-
-        return $this;
-    }
-
-    /**
-     * Request the age_over_16 claim.
-     */
-    public function ageOver16(): static
-    {
-        $this->builder->addAgeOver16();
-
-        return $this;
-    }
-
-    /**
-     * Request multiple credential fields by their string names or enum values.
-     *
-     * @param  array<int, string|CredentialField>  $fields
-     */
-    public function fields(array $fields): static
-    {
-        foreach ($fields as $field) {
-            $this->field($field instanceof CredentialField ? $field->value : $field);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Request a single credential field by name (e.g. 'given_name') or JSON path.
-     */
-    public function field(string $path): static
-    {
-        // PresentationBuilder normalises bare names ('given_name'), legacy
-        // JSONPaths ('$.given_name') and dotted paths ('address.street').
-        $this->builder->addField($path);
-
-        return $this;
-    }
-
-    /**
-     * Override the credential type(s) (vct).
-     *
-     * @param  string|list<string>  $type
-     */
-    public function credentialType(string|array $type): static
-    {
-        $this->builder->setCredentialType($type);
-
-        return $this;
-    }
-
-    /**
-     * Set the verification purpose (vqPS) registered at the trust infrastructure.
-     * Strings are wrapped as the 'default' localization.
-     *
-     * @param  string|array<string, string>  $name
-     * @param  string|array<string, string>  $description
-     */
-    public function purpose(string $scope, string|array $name, string|array $description): static
-    {
-        $this->builder->setVerificationPurpose([
-            'scope' => $scope,
-            'purpose_name' => is_string($name) ? ['default' => $name] : $name,
-            'purpose_description' => is_string($description) ? ['default' => $description] : $description,
-        ]);
-
-        return $this;
-    }
-
-    /**
-     * Override the response mode (e.g. 'direct_post.jwt' for encrypted wallet responses).
-     */
-    public function responseMode(string $mode): static
-    {
-        $this->builder->setResponseMode($mode);
-
-        return $this;
-    }
-
-    /**
-     * Override the list of accepted issuer DIDs.
-     *
-     * @param  list<string>  $dids
-     */
-    public function acceptedIssuers(array $dids): static
-    {
-        $this->builder->setAcceptedIssuers($dids);
-
-        return $this;
-    }
-
-    /**
-     * Override the trust anchors accepted for this verification.
-     *
-     * @param  list<array{did: string, trust_registry_uri: string}>  $anchors
-     */
-    public function trustAnchors(array $anchors): static
-    {
-        $this->builder->setTrustAnchors($anchors);
-
-        return $this;
-    }
-
-    /**
-     * Associate the resulting verification with a user ID.
-     */
-    public function forUser(int|string $userId): static
-    {
-        $this->userId = $userId;
-
-        return $this;
-    }
-
-    /**
-     * Attach arbitrary metadata that will be stored with the verification record.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    public function metadata(array $data): static
-    {
-        $this->metadata = array_merge($this->metadata, $data);
-
-        return $this;
-    }
-
-    // -------------------------------------------------------------------------
-    // Terminal methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Send the verification request to the swiyu verifier and persist the record.
+     * Send a verification request to the swiyu verifier and persist the record.
      *
      * @throws SwissEidException
      * @throws VerifierConnectionException
      */
-    public function create(): PendingVerification
+    public function start(VerificationRequest $request): PendingVerification
     {
-        try {
-            return $this->send();
-        } finally {
-            $this->verify();
+        $builder = $request->getBuilder();
+        $credentialTypes = $builder->getCredentialTypes();
+
+        if ($credentialTypes === []) {
+            throw new SwissEidException(
+                'No credential type configured. Set the SWISS_EID_CREDENTIAL_TYPE environment variable or call credentialType().',
+            );
         }
+
+        $payload = $builder->build();
+        $response = $this->client->createVerification($payload);
+
+        $ttl = (int) ($this->config['verification_ttl'] ?? 300);
+        $localId = Str::uuid()->toString();
+
+        $verification = EidVerification::create([
+            'id' => $localId,
+            'verifier_id' => $response['id'] ?? $response['verificationId'] ?? '',
+            'user_id' => $request->getUserId(),
+            'state' => VerificationState::Pending,
+            'credential_type' => implode(',', $credentialTypes),
+            'requested_fields' => $payload['dcql_query']['credentials'][0]['claims'] ?? [],
+            'metadata' => $request->getMetadata() ?: null,
+            'deeplink' => $response['verification_deeplink'] ?? $response['deeplink'] ?? $response['verification_url'] ?? $response['verificationUrl'] ?? '',
+            'verification_url' => $response['verification_url'] ?? $response['verificationUrl'] ?? $response['verification_deeplink'] ?? $response['deeplink'] ?? '',
+            'expires_at' => Carbon::now()->addSeconds($ttl),
+        ]);
+
+        return new PendingVerification(
+            id: $verification->id,
+            verifierId: $verification->verifier_id,
+            deeplink: (string) $verification->deeplink,
+            verificationUrl: (string) $verification->verification_url,
+            state: $verification->state->value,
+            expiresAt: $verification->expires_at,
+        );
     }
 
     /**
@@ -224,6 +106,14 @@ class SwissEidManager
         return (new VerificationSynchronizer($this->client))->sync($verification)->toResult();
     }
 
+    /**
+     * @param  array<int, mixed>  $arguments
+     */
+    public function __call(string $method, array $arguments): mixed
+    {
+        return $this->verify()->{$method}(...$arguments);
+    }
+
     // -------------------------------------------------------------------------
     // Internal
     // -------------------------------------------------------------------------
@@ -243,49 +133,6 @@ class SwissEidManager
         }
 
         return $verification;
-    }
-
-    /**
-     * @throws SwissEidException
-     * @throws VerifierConnectionException
-     */
-    private function send(): PendingVerification
-    {
-        $credentialTypes = $this->builder->getCredentialTypes();
-
-        if ($credentialTypes === []) {
-            throw new SwissEidException(
-                'No credential type configured. Set the SWISS_EID_CREDENTIAL_TYPE environment variable or call credentialType().',
-            );
-        }
-
-        $payload = $this->builder->build();
-        $response = $this->client->createVerification($payload);
-
-        $ttl = (int) ($this->config['verification_ttl'] ?? 300);
-        $localId = Str::uuid()->toString();
-
-        $verification = EidVerification::create([
-            'id' => $localId,
-            'verifier_id' => $response['id'] ?? $response['verificationId'] ?? '',
-            'user_id' => $this->userId,
-            'state' => VerificationState::Pending,
-            'credential_type' => implode(',', $credentialTypes),
-            'requested_fields' => $payload['dcql_query']['credentials'][0]['claims'] ?? [],
-            'metadata' => $this->metadata ?: null,
-            'deeplink' => $response['verification_deeplink'] ?? $response['deeplink'] ?? $response['verification_url'] ?? $response['verificationUrl'] ?? '',
-            'verification_url' => $response['verification_url'] ?? $response['verificationUrl'] ?? $response['verification_deeplink'] ?? $response['deeplink'] ?? '',
-            'expires_at' => Carbon::now()->addSeconds($ttl),
-        ]);
-
-        return new PendingVerification(
-            id: $verification->id,
-            verifierId: $verification->verifier_id,
-            deeplink: (string) $verification->deeplink,
-            verificationUrl: (string) $verification->verification_url,
-            state: $verification->state->value,
-            expiresAt: $verification->expires_at,
-        );
     }
 
     private function newBuilder(): PresentationBuilder

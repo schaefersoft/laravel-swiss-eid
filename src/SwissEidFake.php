@@ -90,9 +90,9 @@ final class SwissEidFake extends SwissEidManager
     }
 
     /**
-     * Override create() to record the call and return a fake PendingVerification.
+     * Override start() to record the call and return a fake PendingVerification.
      */
-    public function create(): PendingVerification
+    public function start(VerificationRequest $request): PendingVerification
     {
         $id = Str::uuid()->toString();
         $verifierId = Str::uuid()->toString();

@@ -14,6 +14,7 @@ use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
 use SwissEid\LaravelSwissEid\Facades\SwissEid;
 use SwissEid\LaravelSwissEid\Models\EidVerification;
 use SwissEid\LaravelSwissEid\SwissEidFake;
+use SwissEid\LaravelSwissEid\VerificationRequest;
 
 it('creates a pending verification via manager', function (): void {
     Http::fake([
@@ -250,19 +251,30 @@ it('throws when no credential type is configured or overridden', function (): vo
     SwissEid::verify()->ageOver18()->create();
 })->throws(SwissEidException::class);
 
-it('resets builder state after create', function (): void {
+it('returns a new request for every verify call', function (): void {
+    expect(SwissEid::verify())->toBeInstanceOf(VerificationRequest::class)
+        ->not->toBe(SwissEid::verify());
+});
+
+it('does not share state between requests', function (): void {
     Http::fake([
         'localhost:8083/*' => Http::sequence()
             ->push(['id' => 'remote-first', 'deeplink' => 'openid-vc://start'], 200)
             ->push(['id' => 'remote-second', 'deeplink' => 'openid-vc://start'], 200),
     ]);
 
-    SwissEid::ageOver18()->forUser(7)->metadata(['order' => 1])->create();
+    $abandoned = SwissEid::ageOver18()->forUser(7)->metadata(['order' => 1]);
     SwissEid::field('given_name')->create();
+    $abandoned->create();
 
+    $first = EidVerification::where('verifier_id', 'remote-first')->firstOrFail();
     $second = EidVerification::where('verifier_id', 'remote-second')->firstOrFail();
 
-    expect($second->user_id)->toBeNull();
-    expect($second->metadata)->toBeNull();
-    expect($second->requested_fields)->toBe([['path' => ['given_name']]]);
+    expect($first->user_id)->toBeNull();
+    expect($first->metadata)->toBeNull();
+    expect($first->requested_fields)->toBe([['path' => ['given_name']]]);
+
+    expect($second->user_id)->toBe(7);
+    expect($second->metadata)->toBe(['order' => 1]);
+    expect($second->requested_fields)->toBe([['path' => ['age_over_18']]]);
 });
