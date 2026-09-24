@@ -76,3 +76,13 @@ it('returns 404 for unknown verification id', function (): void {
     $this->getJson('/swiss-eid/status/non-existent-uuid')
         ->assertStatus(404);
 });
+
+it('rate limits the status endpoint', function (): void {
+    $url = '/swiss-eid/status/'.Str::uuid()->toString();
+
+    for ($i = 0; $i < 60; $i++) {
+        $this->getJson($url)->assertNotFound();
+    }
+
+    $this->getJson($url)->assertStatus(429);
+});

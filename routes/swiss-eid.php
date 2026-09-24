@@ -19,6 +19,8 @@ Route::middleware('api')->group(function (): void {
         Route::get(
             config('swiss-eid.polling.route_path', '/swiss-eid/status').'/{verification}',
             VerificationStatusController::class,
-        )->name('swiss-eid.status');
+        )
+            ->middleware('throttle:'.config('swiss-eid.polling.rate_limit', '60,1'))
+            ->name('swiss-eid.status');
     }
 });
