@@ -206,6 +206,33 @@ class SwissEidManager
      */
     public function getVerification(string $verifierIdOrModelId): VerificationResult
     {
+        return $this->findVerification($verifierIdOrModelId)->toResult();
+    }
+
+    /**
+     * Pull the current state of a verification from the swiyu verifier and
+     * persist it. Use this when the webhook cannot reach your application.
+     *
+     * @throws VerificationNotFoundException
+     * @throws SwissEidException
+     * @throws VerifierConnectionException
+     */
+    public function refresh(string $verifierIdOrModelId): VerificationResult
+    {
+        $verification = $this->findVerification($verifierIdOrModelId);
+
+        return (new VerificationSynchronizer($this->client))->sync($verification)->toResult();
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal
+    // -------------------------------------------------------------------------
+
+    /**
+     * @throws VerificationNotFoundException
+     */
+    private function findVerification(string $verifierIdOrModelId): EidVerification
+    {
         $verification = EidVerification::find($verifierIdOrModelId)
             ?? EidVerification::where('verifier_id', $verifierIdOrModelId)->first();
 
@@ -215,12 +242,8 @@ class SwissEidManager
             );
         }
 
-        return $verification->toResult();
+        return $verification;
     }
-
-    // -------------------------------------------------------------------------
-    // Internal
-    // -------------------------------------------------------------------------
 
     /**
      * @throws SwissEidException

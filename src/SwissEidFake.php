@@ -129,6 +129,14 @@ final class SwissEidFake extends SwissEidManager
         return $result;
     }
 
+    /**
+     * Override refresh() to behave like getVerification() without contacting the verifier.
+     */
+    public function refresh(string $verifierIdOrModelId): VerificationResult
+    {
+        return $this->getVerification($verifierIdOrModelId);
+    }
+
     // -------------------------------------------------------------------------
     // Assertions
     // -------------------------------------------------------------------------
