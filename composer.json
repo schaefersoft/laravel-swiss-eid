@@ -38,21 +38,21 @@
     },
     "autoload": {
         "psr-4": {
-            "SwissEid\\LaravelSwissEid\\": "src/"
+            "SchaeferSoft\\SwissEid\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "SwissEid\\LaravelSwissEid\\Tests\\": "tests/"
+            "SchaeferSoft\\SwissEid\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "SwissEid\\LaravelSwissEid\\SwissEidServiceProvider"
+                "SchaeferSoft\\SwissEid\\SwissEidServiceProvider"
             ],
             "aliases": {
-                "SwissEid": "SwissEid\\LaravelSwissEid\\Facades\\SwissEid"
+                "SwissEid": "SchaeferSoft\\SwissEid\\Facades\\SwissEid"
             }
         }
     },

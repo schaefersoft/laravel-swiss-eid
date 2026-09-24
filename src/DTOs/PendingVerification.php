@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\DTOs;
+namespace SchaeferSoft\SwissEid\DTOs;
 
 use Carbon\Carbon;
-use SwissEid\LaravelSwissEid\QrCodeGenerator;
+use SchaeferSoft\SwissEid\QrCodeGenerator;
 
 class PendingVerification
 {

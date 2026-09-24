@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Commands;
+namespace SchaeferSoft\SwissEid\Commands;
 
 use Illuminate\Console\Command;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 class CleanupCommand extends Command
 {

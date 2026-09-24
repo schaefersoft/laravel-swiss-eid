@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Commands;
+namespace SchaeferSoft\SwissEid\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;

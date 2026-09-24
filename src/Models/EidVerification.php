@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Models;
+namespace SchaeferSoft\SwissEid\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\DTOs\VerificationResult;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
 
 /**
  * @property string $id

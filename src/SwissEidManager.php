@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
-use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
-use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\DTOs\PendingVerification;
+use SchaeferSoft\SwissEid\DTOs\VerificationResult;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerificationNotFoundException;
+use SchaeferSoft\SwissEid\Exceptions\VerifierConnectionException;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 /**
  * Calls to builder methods (e.g. ageOver18()) start a new VerificationRequest.

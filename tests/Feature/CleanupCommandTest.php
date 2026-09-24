@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 function makeVerification(Carbon $expiresAt, VerificationState $state = VerificationState::Pending): EidVerification
 {

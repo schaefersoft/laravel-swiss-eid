@@ -6,13 +6,13 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
-use SwissEid\LaravelSwissEid\Events\VerificationExpired;
-use SwissEid\LaravelSwissEid\Events\VerificationFailed;
-use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
-use SwissEid\LaravelSwissEid\Facades\SwissEid;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Events\VerificationCompleted;
+use SchaeferSoft\SwissEid\Events\VerificationExpired;
+use SchaeferSoft\SwissEid\Events\VerificationFailed;
+use SchaeferSoft\SwissEid\Exceptions\VerificationNotFoundException;
+use SchaeferSoft\SwissEid\Facades\SwissEid;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 function createRefreshRecord(string $verifierId, VerificationState $state = VerificationState::Pending): EidVerification
 {

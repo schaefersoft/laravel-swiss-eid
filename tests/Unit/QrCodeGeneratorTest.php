@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SwissEid\LaravelSwissEid\QrCodeGenerator;
+use SchaeferSoft\SwissEid\QrCodeGenerator;
 
 it('generates an inline SVG containing the encoded data', function (): void {
     $svg = (new QrCodeGenerator)->svg('openid-vc://example');

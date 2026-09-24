@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Commands;
+namespace SchaeferSoft\SwissEid\Commands;
 
 use Illuminate\Console\Command;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
-use SwissEid\LaravelSwissEid\VerifierClient;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerifierConnectionException;
+use SchaeferSoft\SwissEid\VerifierClient;
 
 class TestConnectionCommand extends Command
 {

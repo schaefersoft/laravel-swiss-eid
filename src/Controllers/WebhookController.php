@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Controllers;
+namespace SchaeferSoft\SwissEid\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
-use SwissEid\LaravelSwissEid\VerificationSynchronizer;
+use SchaeferSoft\SwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\VerificationSynchronizer;
 
 class WebhookController extends Controller
 {

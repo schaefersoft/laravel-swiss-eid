@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Controllers;
+namespace SchaeferSoft\SwissEid\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Events\VerificationExpired;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Events\VerificationExpired;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 class VerificationStatusController extends Controller
 {

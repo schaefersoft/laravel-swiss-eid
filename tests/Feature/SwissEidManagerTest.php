@@ -5,16 +5,16 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\AssertionFailedError;
-use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
-use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
-use SwissEid\LaravelSwissEid\Enums\CredentialField;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerificationNotFoundException;
-use SwissEid\LaravelSwissEid\Facades\SwissEid;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
-use SwissEid\LaravelSwissEid\SwissEidFake;
-use SwissEid\LaravelSwissEid\VerificationRequest;
+use SchaeferSoft\SwissEid\DTOs\PendingVerification;
+use SchaeferSoft\SwissEid\DTOs\VerificationResult;
+use SchaeferSoft\SwissEid\Enums\CredentialField;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerificationNotFoundException;
+use SchaeferSoft\SwissEid\Facades\SwissEid;
+use SchaeferSoft\SwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\SwissEidFake;
+use SchaeferSoft\SwissEid\VerificationRequest;
 
 it('creates a pending verification via manager', function (): void {
     Http::fake([

@@ -62,7 +62,7 @@ SWISS_EID_ACCEPTED_ISSUERS=did:webvh:QmPEZPhDFR4nEYSFK5bMnvECqdpf1tPTPJuWs9QrMjC
 ### Step 4 — Start a verification and show the QR code
 
 ```php
-use SwissEid\LaravelSwissEid\Facades\SwissEid;
+use SchaeferSoft\SwissEid\Facades\SwissEid;
 
 $pending = SwissEid::verify()
     ->ageOver18()
@@ -88,7 +88,7 @@ to the event:
 
 ```php
 use App\Models\User;
-use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
+use SchaeferSoft\SwissEid\Events\VerificationCompleted;
 
 Event::listen(VerificationCompleted::class, function ($event) {
     $result = $event->verification->toResult();
@@ -384,7 +384,7 @@ instance, so you can chain freely. `create()` persists the record and returns
 a `PendingVerification` DTO.
 
 ```php
-use SwissEid\LaravelSwissEid\Facades\SwissEid;
+use SchaeferSoft\SwissEid\Facades\SwissEid;
 
 $pending = SwissEid::verify()
     ->ageOver18()
@@ -417,7 +417,7 @@ The returned `$pending` has:
 Use the `CredentialField` enum (preferred) or plain field-name strings:
 
 ```php
-use SwissEid\LaravelSwissEid\Enums\CredentialField;
+use SchaeferSoft\SwissEid\Enums\CredentialField;
 
 $pending = SwissEid::verify()
     ->fields([
@@ -555,7 +555,7 @@ existing ones — e.g. `lang/vendor/swiss-eid/es/states.php` with Spanish labels
 anywhere — not just in the polling JSON:
 
 ```php
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
 
 $state = VerificationState::Pending;
 echo $state->label();  // "Ausstehend" (de), "Pending" (en), …
@@ -625,9 +625,9 @@ refresh all pending verifications at once, run or schedule
 Listen in your `EventServiceProvider` or with `#[AsEventListener]`:
 
 ```php
-use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
-use SwissEid\LaravelSwissEid\Events\VerificationFailed;
-use SwissEid\LaravelSwissEid\Events\VerificationExpired;
+use SchaeferSoft\SwissEid\Events\VerificationCompleted;
+use SchaeferSoft\SwissEid\Events\VerificationFailed;
+use SchaeferSoft\SwissEid\Events\VerificationExpired;
 
 Event::listen(VerificationCompleted::class, function ($event) {
     $user = User::find($event->verification->user_id);
@@ -755,8 +755,8 @@ Swiss eID Doctor — configuration diagnostics
 Use the built-in `SwissEidFake` to avoid real HTTP calls in your tests:
 
 ```php
-use SwissEid\LaravelSwissEid\Facades\SwissEid;
-use SwissEid\LaravelSwissEid\SwissEidFake;
+use SchaeferSoft\SwissEid\Facades\SwissEid;
+use SchaeferSoft\SwissEid\SwissEidFake;
 
 it('starts a verification', function () {
     $fake = SwissEid::fake();

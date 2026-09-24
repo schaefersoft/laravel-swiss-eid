@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Events;
+namespace SchaeferSoft\SwissEid\Events;
 
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 class VerificationCompleted
 {

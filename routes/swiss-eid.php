@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use SwissEid\LaravelSwissEid\Controllers\VerificationStatusController;
-use SwissEid\LaravelSwissEid\Controllers\WebhookController;
-use SwissEid\LaravelSwissEid\Middleware\VerifyWebhookApiKey;
+use SchaeferSoft\SwissEid\Controllers\VerificationStatusController;
+use SchaeferSoft\SwissEid\Controllers\WebhookController;
+use SchaeferSoft\SwissEid\Middleware\VerifyWebhookApiKey;
 
 Route::middleware('api')->group(function (): void {
     Route::post(

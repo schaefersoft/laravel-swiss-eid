@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Assert;
-use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
-use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\DTOs\PendingVerification;
+use SchaeferSoft\SwissEid\DTOs\VerificationResult;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 /**
  * Test double for SwissEidManager that records calls and returns pre-defined results.

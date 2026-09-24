@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Facades;
+namespace SchaeferSoft\SwissEid\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use SwissEid\LaravelSwissEid\DTOs\VerificationResult;
-use SwissEid\LaravelSwissEid\Enums\CredentialField;
-use SwissEid\LaravelSwissEid\SwissEidFake;
-use SwissEid\LaravelSwissEid\SwissEidManager;
-use SwissEid\LaravelSwissEid\VerificationRequest;
+use SchaeferSoft\SwissEid\DTOs\VerificationResult;
+use SchaeferSoft\SwissEid\Enums\CredentialField;
+use SchaeferSoft\SwissEid\SwissEidFake;
+use SchaeferSoft\SwissEid\SwissEidManager;
+use SchaeferSoft\SwissEid\VerificationRequest;
 
 /**
  * @method static VerificationRequest verify()

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Middleware;
+namespace SchaeferSoft\SwissEid\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

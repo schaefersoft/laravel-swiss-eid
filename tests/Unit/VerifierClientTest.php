@@ -6,9 +6,9 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
-use SwissEid\LaravelSwissEid\VerifierClient;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerifierConnectionException;
+use SchaeferSoft\SwissEid\VerifierClient;
 
 function makeClient(array $override = []): VerifierClient
 {

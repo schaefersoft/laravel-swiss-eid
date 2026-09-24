@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
-use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
-use SwissEid\LaravelSwissEid\Enums\CredentialField;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
+use SchaeferSoft\SwissEid\DTOs\PendingVerification;
+use SchaeferSoft\SwissEid\Enums\CredentialField;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerifierConnectionException;
 
 /**
  * A single verification request. Every call to SwissEid::verify() returns a
