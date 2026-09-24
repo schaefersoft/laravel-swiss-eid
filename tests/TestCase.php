@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Tests;
+namespace SchaeferSoft\SwissEid\Tests;
 
 use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase as Orchestra;
-use SwissEid\LaravelSwissEid\SwissEidServiceProvider;
+use SchaeferSoft\SwissEid\SwissEidServiceProvider;
 
 class TestCase extends Orchestra
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
 
 it('marks success, failed and expired as terminal', function (): void {
     expect(VerificationState::Success->isTerminal())->toBeTrue();

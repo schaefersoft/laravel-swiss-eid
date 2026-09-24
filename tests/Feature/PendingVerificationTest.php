@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Carbon\Carbon;
-use SwissEid\LaravelSwissEid\DTOs\PendingVerification;
+use SchaeferSoft\SwissEid\DTOs\PendingVerification;
 
 function makePending(?Carbon $expiresAt = null): PendingVerification
 {

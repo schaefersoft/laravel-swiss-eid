@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SwissEid\LaravelSwissEid\PresentationBuilder;
+use SchaeferSoft\SwissEid\PresentationBuilder;
 
 it('builds a DCQL query with the vct in meta.vct_values', function (): void {
     $builder = new PresentationBuilder(credentialType: 'test-sdjwt');

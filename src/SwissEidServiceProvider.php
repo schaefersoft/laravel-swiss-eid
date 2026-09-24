@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
 use Illuminate\Support\ServiceProvider;
-use SwissEid\LaravelSwissEid\Commands\CleanupCommand;
-use SwissEid\LaravelSwissEid\Commands\DoctorCommand;
-use SwissEid\LaravelSwissEid\Commands\ExpireVerificationsCommand;
-use SwissEid\LaravelSwissEid\Commands\InstallCommand;
-use SwissEid\LaravelSwissEid\Commands\RefreshVerificationsCommand;
-use SwissEid\LaravelSwissEid\Commands\TestConnectionCommand;
+use SchaeferSoft\SwissEid\Commands\CleanupCommand;
+use SchaeferSoft\SwissEid\Commands\DoctorCommand;
+use SchaeferSoft\SwissEid\Commands\ExpireVerificationsCommand;
+use SchaeferSoft\SwissEid\Commands\InstallCommand;
+use SchaeferSoft\SwissEid\Commands\RefreshVerificationsCommand;
+use SchaeferSoft\SwissEid\Commands\TestConnectionCommand;
 
 class SwissEidServiceProvider extends ServiceProvider
 {

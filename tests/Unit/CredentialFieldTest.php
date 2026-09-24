@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SwissEid\LaravelSwissEid\Enums\CredentialField;
+use SchaeferSoft\SwissEid\Enums\CredentialField;
 
 it('returns the DCQL claim path for each field', function (CredentialField $field, array $expected): void {
     expect($field->path())->toBe($expected);

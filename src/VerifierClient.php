@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerifierConnectionException;
 
 class VerifierClient
 {

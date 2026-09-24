@@ -5,9 +5,9 @@ declare(strict_types=1);
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Events\VerificationExpired;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Events\VerificationExpired;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 beforeEach(function (): void {
     config()->set('swiss-eid.polling.enabled', true);

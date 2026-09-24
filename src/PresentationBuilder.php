@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
 /**
  * Builds a DCQL (Digital Credentials Query Language) query for the swiyu

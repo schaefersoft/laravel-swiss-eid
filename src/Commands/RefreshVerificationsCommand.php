@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Commands;
+namespace SchaeferSoft\SwissEid\Commands;
 
 use Illuminate\Console\Command;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
-use SwissEid\LaravelSwissEid\SwissEidManager;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\SwissEidManager;
 
 class RefreshVerificationsCommand extends Command
 {

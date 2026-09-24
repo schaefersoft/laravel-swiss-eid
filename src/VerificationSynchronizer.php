@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid;
+namespace SchaeferSoft\SwissEid;
 
 use Illuminate\Support\Facades\Log;
-use SwissEid\LaravelSwissEid\Enums\VerificationState;
-use SwissEid\LaravelSwissEid\Events\VerificationCompleted;
-use SwissEid\LaravelSwissEid\Events\VerificationExpired;
-use SwissEid\LaravelSwissEid\Events\VerificationFailed;
-use SwissEid\LaravelSwissEid\Exceptions\SwissEidException;
-use SwissEid\LaravelSwissEid\Exceptions\VerifierConnectionException;
-use SwissEid\LaravelSwissEid\Models\EidVerification;
+use SchaeferSoft\SwissEid\Enums\VerificationState;
+use SchaeferSoft\SwissEid\Events\VerificationCompleted;
+use SchaeferSoft\SwissEid\Events\VerificationExpired;
+use SchaeferSoft\SwissEid\Events\VerificationFailed;
+use SchaeferSoft\SwissEid\Exceptions\SwissEidException;
+use SchaeferSoft\SwissEid\Exceptions\VerifierConnectionException;
+use SchaeferSoft\SwissEid\Models\EidVerification;
 
 class VerificationSynchronizer
 {

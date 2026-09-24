@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Exceptions;
+namespace SchaeferSoft\SwissEid\Exceptions;
 
 use RuntimeException;
 

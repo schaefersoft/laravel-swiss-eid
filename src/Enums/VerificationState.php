@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwissEid\LaravelSwissEid\Enums;
+namespace SchaeferSoft\SwissEid\Enums;
 
 enum VerificationState: string
 {
