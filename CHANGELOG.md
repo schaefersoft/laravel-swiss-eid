@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.5.2...v0.6.0) (2026-09-24)
+
+
+### Features
+
+* add refresh() and swiss-eid:refresh command to pull state from the verifier ([1d0a7c7](https://github.com/schaefersoft/laravel-swiss-eid/commit/1d0a7c77dea722efe3fa9b48b2ba1347839e671b))
+
 ## [0.5.2](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.5.1...v0.5.2) (2026-09-24)
 
 
