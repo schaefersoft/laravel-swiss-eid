@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.7.0...v0.7.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* require PHP 8.2+ ([39fddc6](https://github.com/schaefersoft/laravel-swiss-eid/commit/39fddc639545c5d5c7b1116d601e8ce7e0eec891))
+* require PHP 8.2+ ([6f3e6bd](https://github.com/schaefersoft/laravel-swiss-eid/commit/6f3e6bdc8281e5d27de4ecf48ad63e0ea1766ddb))
+
 ## [0.7.0](https://github.com/schaefersoft/laravel-swiss-eid/compare/v0.6.0...v0.7.0) (2026-09-24)
 
 
