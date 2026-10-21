@@ -153,14 +153,12 @@ in place. Each sub-section below covers exactly one requirement.
 
 | Dependency | Version |
 |---|---|
-| PHP | `8.1+` (runtime); CI tests `8.2`–`8.5` |
+| PHP | `8.2+` |
 | Laravel | `10`, `11`, `12`, `13` |
 | Composer | 2.x |
 
-The package itself runs on PHP 8.1+ (uses native enums, readonly DTOs and
-`HasUuids`). CI only tests against PHP 8.2+ because the Pest/PHPUnit dev
-toolchain no longer resolves on PHP 8.1. Consumers on PHP 8.1 can still
-install and use the package without issue.
+PHP 8.1 is end-of-life and no longer receives security fixes (e.g. for
+PHP2Shell, CVE-2026-109618 / CVE-2026-109619), so the package requires PHP 8.2+.
 
 ### 2. A running swiyu Verifier
 
